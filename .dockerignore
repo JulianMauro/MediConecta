@@ -1,0 +1,21 @@
+# Todo lo que no debe entrar al contexto de build.
+# Sin esto, Docker copia target/ y .git/ enteros y el build se vuelve lento.
+
+target/
+!target/*.jar
+
+.git/
+.gitignore
+.gitattributes
+
+.idea/
+*.iml
+.vscode/
+
+.mvn/
+mvnw
+mvnw.cmd
+
+*.md
+.env
+logs/

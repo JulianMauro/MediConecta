@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "MediConecta (Docker)",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "mediconecta_db",
+      "Username": "mediconecta",
+      "SSLMode": "prefer",
+      "Comment": "Base del proyecto. El host es 'postgres' porque es el nombre del servicio en docker-compose."
+    }
+  }
+}

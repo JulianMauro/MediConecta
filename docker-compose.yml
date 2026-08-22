@@ -1,0 +1,91 @@
+# Levanta todo el sistema con: docker compose up --build
+#
+# Son dos contenedores:
+#   postgres -> la base de datos
+#   backend  -> la aplicacion Spring Boot
+#
+# Se comunican por la red interna "mediconecta-network". Dentro de esa red
+# cada servicio es alcanzable por su nombre, por eso la URL de la base
+# apunta a "postgres" y no a "localhost".
+
+services:
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: mediconecta-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-mediconecta_db}
+      POSTGRES_USER: ${POSTGRES_USER:-mediconecta}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mediconecta}
+    ports:
+      # Se expone al host para poder conectarse con DBeaver / pgAdmin desde afuera.
+      - "5432:5432"
+    volumes:
+      # Sin este volumen los datos se perderian al borrar el contenedor.
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mediconecta-network
+    healthcheck:
+      # Marca el servicio como "healthy" recien cuando Postgres acepta conexiones.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mediconecta} -d ${POSTGRES_DB:-mediconecta_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  pgadmin:
+    # Interfaz web para mirar y consultar la base sin instalar nada en la maquina.
+    # Queda en http://localhost:5050
+    image: dpage/pgadmin4:latest
+    container_name: mediconecta-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@mediconecta.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      # Modo escritorio: entra directo, sin pantalla de login.
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      # Deja la conexion al servidor ya cargada al abrir pgAdmin.
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
+      # Conserva las preferencias y consultas guardadas entre reinicios.
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - mediconecta-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  backend:
+    build: .
+    container_name: mediconecta-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-mediconecta_db}
+      DATABASE_USERNAME: ${POSTGRES_USER:-mediconecta}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-mediconecta}
+      JWT_SECRET: ${JWT_SECRET:-mediconecta-clave-secreta-de-desarrollo-cambiar-en-produccion-1234567890}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@mediconecta.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin1234}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        # No arranca hasta que la base este realmente lista, no solo iniciada.
+        condition: service_healthy
+    networks:
+      - mediconecta-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+
+networks:
+  mediconecta-network:
+    driver: bridge

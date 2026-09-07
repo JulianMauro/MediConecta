@@ -28,7 +28,7 @@ export function HomePage() {
 			{viaje ? (
 				<BikeModeCard viaje={viaje} onDevuelta={onDevuelta} />
 			) : (
-				<div>
+				<div aria-live="polite">
 					{ultimoResultado && (
 						<p className={`aviso ${ultimoResultado.excedioTiempo ? 'aviso-alerta' : 'aviso-ok'}`}>
 							Bici devuelta. Viaje de {ultimoResultado.duracionMinutos} min.

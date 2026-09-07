@@ -34,3 +34,9 @@ target/
 *.iws
 *.iml
 *.ipr
+
+# Variables de entorno: nunca subir secretos al repo (.env.example si va)
+.env
+
+# Config local de Claude Code (herramienta, no parte de la app)
+.claude/

@@ -1,51 +1,26 @@
-import { useEffect, useState } from 'react';
-import { pagosApi } from '../../api/pagos';
-import { ApiError } from '../../api/client';
 import type { PagoResponse } from '../../types/dto';
 
-export function PagosSection() {
-	const [pagos, setPagos] = useState<PagoResponse[]>([]);
-	const [error, setError] = useState<string | null>(null);
+interface Props {
+	pagos: PagoResponse[];
+	error: string | null;
+	confirmar: (id: number) => void;
+	rechazar: (id: number) => void;
+}
 
-	function recargar() {
-		pagosApi.listarPropios().then(setPagos);
-	}
-
-	useEffect(recargar, []);
-
-	async function confirmar(id: number) {
-		setError(null);
-		try {
-			// Simula la respuesta de la pasarela: en un sistema real esto lo dispara un webhook, no el usuario.
-			await pagosApi.confirmar(id, { referenciaPasarela: `SIM-${Date.now()}` });
-			recargar();
-		} catch (err) {
-			setError(err instanceof ApiError ? err.message : 'no se pudo confirmar el pago');
-		}
-	}
-
-	async function rechazar(id: number) {
-		setError(null);
-		try {
-			await pagosApi.rechazar(id);
-			recargar();
-		} catch (err) {
-			setError(err instanceof ApiError ? err.message : 'no se pudo rechazar el pago');
-		}
-	}
-
+export function PagosSection({ pagos, error, confirmar, rechazar }: Props) {
 	return (
 		<section className="tarjeta">
 			<h2>Pagos</h2>
 			{error && <p className="error">{error}</p>}
 			<table className="tabla">
+				<caption>Tus pagos, pendientes y confirmados</caption>
 				<thead>
 					<tr>
-						<th>Concepto</th>
-						<th>Monto</th>
-						<th>Estado</th>
-						<th>Fecha</th>
-						<th></th>
+						<th scope="col">Concepto</th>
+						<th scope="col">Monto</th>
+						<th scope="col">Estado</th>
+						<th scope="col">Fecha</th>
+						<th scope="col"><span className="solo-lectores">Acciones</span></th>
 					</tr>
 				</thead>
 				<tbody>

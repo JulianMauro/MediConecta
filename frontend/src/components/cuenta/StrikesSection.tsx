@@ -13,11 +13,12 @@ export function StrikesSection() {
 		<section className="tarjeta">
 			<h2>Strikes</h2>
 			<table className="tabla">
+				<caption>Penalizaciones registradas en tu cuenta</caption>
 				<thead>
 					<tr>
-						<th>Viaje</th>
-						<th>Estado</th>
-						<th>Fecha</th>
+						<th scope="col">Viaje</th>
+						<th scope="col">Estado</th>
+						<th scope="col">Fecha</th>
 					</tr>
 				</thead>
 				<tbody>

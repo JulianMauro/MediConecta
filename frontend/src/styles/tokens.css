@@ -1,0 +1,155 @@
+/**
+ * Tokens de diseño — PeopleBikes.
+ * Ver DISENO.md para los roles de cada color y sus contrastes medidos.
+ *
+ * Dos capas: primitivos (la paleta cruda, no se usan directo en componentes)
+ * y semánticos (el rol, que es lo único que consume el CSS de la app).
+ * Cambiar de tema solo reasigna los semánticos.
+ */
+
+:root {
+	/* ---- Primitivos: marca ---- */
+	--marca-50: #faf5ff;
+	--marca-100: #f3e8ff;
+	--marca-200: #e9d5ff;
+	--marca-300: #d8b4fe;
+	--marca-500: #a855f7;
+	--marca-600: #9333ea;
+	--marca-800: #6b21a8;
+
+	/* ---- Primitivos: tinta ---- */
+	--tinta-900: #1f2937;
+	--tinta-700: #374151;
+	--tinta-500: #4b5563;
+	--tinta-400: #6b7280;
+	--tinta-200: #e5e7eb;
+	--tinta-100: #f3f4f6;
+	--blanco: #ffffff;
+
+	/* ---- Primitivos: funcionales ---- */
+	--ok-500: #166534;
+	--ok-100: #dcfce7;
+	--error-500: #b91c1c;
+	--error-100: #fee2e2;
+	--aviso-500: #854d0e;
+	--aviso-100: #fef9c3;
+
+	/* ---- Semánticos: superficie ---- */
+	--fondo: var(--marca-50);
+	--superficie: var(--blanco);
+	--superficie-2: var(--marca-100);
+	--superficie-hover: var(--marca-50);
+	--borde: var(--tinta-200);
+	--borde-fuerte: var(--tinta-400);
+
+	/* ---- Semánticos: texto ---- */
+	--texto: var(--tinta-900);
+	--texto-fuerte: var(--tinta-900);
+	--texto-suave: var(--tinta-400);
+	/* --texto-suave no llega a 4.5:1 sobre la superficie de acento: ahi se usa este. */
+	--texto-suave-en-acento: var(--tinta-500);
+	--texto-sobre-acento: var(--blanco);
+
+	/* ---- Semánticos: interacción ---- */
+	--acento: var(--marca-800);
+	--acento-hover: var(--marca-600);
+	--acento-suave: var(--marca-100);
+	--decorativo: var(--marca-500);
+	--foco: var(--marca-500);
+
+	/* ---- Semánticos: estado ---- */
+	--ok-texto: var(--ok-500);
+	--ok-fondo: var(--ok-100);
+	--error-texto: var(--error-500);
+	--error-fondo: var(--error-100);
+	--aviso-texto: var(--aviso-500);
+	--aviso-fondo: var(--aviso-100);
+
+	/* ---- Tipografía ---- */
+	--fuente: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+	--fuente-mono: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+	--txt-display: 3rem;
+	--txt-h1: 2rem;
+	--txt-h2: 1.375rem;
+	--txt-h3: 1.0625rem;
+	--txt-cuerpo: 1.0625rem;
+	--txt-chico: 0.9375rem;
+	--txt-micro: 0.8125rem;
+	--txt-contador: 4rem;
+
+	/* ---- Espaciado (escala de 4) ---- */
+	--e-1: 0.25rem;
+	--e-2: 0.5rem;
+	--e-3: 0.75rem;
+	--e-4: 1rem;
+	--e-5: 1.5rem;
+	--e-6: 2rem;
+	--e-7: 3rem;
+	--e-8: 4rem;
+
+	/* ---- Radios ---- */
+	--radio-chico: 6px;
+	--radio: 10px;
+	--radio-grande: 16px;
+	--radio-pill: 999px;
+
+	/* ---- Elevación ---- */
+	--elev-1: 0 1px 2px rgba(31, 41, 55, 0.06);
+	--elev-2: 0 2px 6px rgba(31, 41, 55, 0.08);
+	--elev-3: 0 8px 20px rgba(31, 41, 55, 0.1);
+	--elev-4: 0 20px 40px rgba(31, 41, 55, 0.18);
+
+	/* ---- Layout ---- */
+	--ancho-contenido: 1120px;
+	--ancho-angosto: 420px;
+	--alto-nav: 72px;
+	--target-min: 44px;
+
+	/* ---- Movimiento ---- */
+	--transicion: 140ms ease;
+}
+
+/**
+ * Modo oscuro. Solo se reasignan los semánticos: los primitivos no cambian.
+ * El acento pasa a --marca-300 porque --marca-800 sobre fondo oscuro no llega a 4.5:1.
+ */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-tema='claro']) {
+		--fondo: #15181f;
+		--superficie: var(--tinta-900);
+		--superficie-2: #2b3444;
+		--superficie-hover: #2b3444;
+		--borde: #3a4456;
+		--borde-fuerte: var(--tinta-400);
+
+		--texto: #e8eaf0;
+		--texto-fuerte: var(--blanco);
+		--texto-suave: #a0a8b8;
+		--texto-suave-en-acento: #c9cedb;
+		--texto-sobre-acento: var(--tinta-900);
+
+		--acento: var(--marca-300);
+		--acento-hover: var(--marca-200);
+		--acento-suave: #3b2a52;
+		--decorativo: var(--marca-500);
+		--foco: var(--marca-300);
+
+		--ok-texto: #86efac;
+		--ok-fondo: #14361f;
+		--error-texto: #fca5a5;
+		--error-fondo: #401616;
+		--aviso-texto: #fde68a;
+		--aviso-fondo: #3a2e0b;
+
+		--elev-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+		--elev-2: 0 2px 6px rgba(0, 0, 0, 0.45);
+		--elev-3: 0 8px 20px rgba(0, 0, 0, 0.5);
+		--elev-4: 0 20px 40px rgba(0, 0, 0, 0.6);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:root {
+		--transicion: 0ms;
+	}
+}

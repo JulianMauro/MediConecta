@@ -73,18 +73,19 @@ export function MembresiasSection() {
 			</div>
 
 			<table className="tabla">
+				<caption>Planes de membresía configurados en el sistema</caption>
 				<thead>
 					<tr>
-						<th>Nombre</th>
-						<th>Tipo</th>
-						<th>Dura</th>
-						<th>Min./viaje</th>
-						<th>Viajes/día</th>
-						<th>Espera</th>
-						<th>Precio</th>
-						<th>$/min extra</th>
-						<th>Activa</th>
-						<th></th>
+						<th scope="col">Nombre</th>
+						<th scope="col">Tipo</th>
+						<th scope="col">Dura</th>
+						<th scope="col">Min./viaje</th>
+						<th scope="col">Viajes/día</th>
+						<th scope="col">Espera</th>
+						<th scope="col">Precio</th>
+						<th scope="col">$/min extra</th>
+						<th scope="col">Activa</th>
+						<th scope="col"><span className="solo-lectores">Acciones</span></th>
 					</tr>
 				</thead>
 				<tbody>

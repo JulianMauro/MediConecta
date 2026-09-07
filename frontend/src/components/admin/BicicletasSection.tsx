@@ -69,11 +69,12 @@ export function BicicletasSection({ refrescarSenal }: Props) {
 			{almacenes.length === 0 && <p className="ayuda">Creá un almacén primero: toda bici nueva necesita uno.</p>}
 
 			<table className="tabla">
+				<caption>Bicicletas de la flota, con su estado y ubicación actual</caption>
 				<thead>
 					<tr>
-						<th>Código</th>
-						<th>Estado</th>
-						<th>Ubicación</th>
+						<th scope="col">Código</th>
+						<th scope="col">Estado</th>
+						<th scope="col">Ubicación</th>
 					</tr>
 				</thead>
 				<tbody>

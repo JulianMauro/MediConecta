@@ -13,12 +13,13 @@ export function ViajesSection() {
 		<section className="tarjeta">
 			<h2>Historial de viajes</h2>
 			<table className="tabla">
+				<caption>Historial de tus viajes</caption>
 				<thead>
 					<tr>
-						<th>Bici</th>
-						<th>Inicio</th>
-						<th>Duración</th>
-						<th>Excedió</th>
+						<th scope="col">Bici</th>
+						<th scope="col">Inicio</th>
+						<th scope="col">Duración</th>
+						<th scope="col">Excedió</th>
 					</tr>
 				</thead>
 				<tbody>

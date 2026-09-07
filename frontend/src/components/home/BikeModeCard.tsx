@@ -82,11 +82,24 @@ export function BikeModeCard({ viaje, onDevuelta }: Props) {
 				<dd>{viaje.codigoBicicleta}</dd>
 			</dl>
 
-			<div className={`contador ${excedido ? 'contador-excedido' : ''}`}>{formatearDuracion(segundosTranscurridos)}</div>
+			{/*
+			  El contador visual se actualiza cada segundo, pero se oculta de los lectores de pantalla:
+			  anunciar un valor por segundo haria la pagina inusable. En su lugar hay una region viva
+			  cuyo texto solo cambia cuando cambia el minuto, asi se anuncia una vez por minuto.
+			*/}
+			<div className={`contador ${excedido ? 'contador-excedido' : ''}`} aria-hidden="true">
+				{formatearDuracion(segundosTranscurridos)}
+			</div>
+			<p className="solo-lectores" aria-live="polite">
+				{Math.floor(segundosTranscurridos / 60)} minutos de viaje
+			</p>
+
 			{membresia && (
-				<p className="ayuda">
-					Tiempo incluido: {membresia.tiempoPermitidoMinutos} min
-					{excedido && ' — ya superaste el tiempo permitido, se te va a cobrar el extra al devolver la bici.'}
+				<p className="ayuda">Tiempo incluido: {membresia.tiempoPermitidoMinutos} min</p>
+			)}
+			{excedido && (
+				<p className="aviso aviso-alerta" role="alert">
+					Ya superaste el tiempo permitido: se te va a cobrar el extra al devolver la bici.
 				</p>
 			)}
 
@@ -114,8 +127,12 @@ export function BikeModeCard({ viaje, onDevuelta }: Props) {
 					</select>
 				</label>
 				{estacionId !== '' && anclajes.length === 0 && <p className="ayuda">No hay anclajes libres en esa estación.</p>}
-				{error && <p className="error">{error}</p>}
-				<button onClick={devolver} disabled={anclajeId === '' || devolviendo}>
+				{error && (
+					<p className="error" role="alert">
+						{error}
+					</p>
+				)}
+				<button type="button" onClick={devolver} disabled={anclajeId === '' || devolviendo}>
 					{devolviendo ? 'Devolviendo...' : 'Devolver bici'}
 				</button>
 			</div>

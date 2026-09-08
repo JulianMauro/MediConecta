@@ -42,6 +42,11 @@
 	--borde: var(--tinta-200);
 	--borde-fuerte: var(--tinta-400);
 
+	/* ---- Patrón de puntos del fondo (ver "body" en index.css) ---- */
+	--patron-escala: 64px;
+	--patron-base: var(--fondo);
+	--patron-acento: var(--marca-500);
+
 	/* ---- Semánticos: texto ---- */
 	--texto: var(--tinta-900);
 	--texto-fuerte: var(--tinta-900);
@@ -95,6 +100,16 @@
 
 	/* ---- Elevación ---- */
 	--elev-1: 0 1px 2px rgba(31, 41, 55, 0.06);
+	/*
+	 * Sombra neumorfica de tarjeta (Uiverse by Yaseen549), en tres capas:
+	 * 1) halo ambiental con spread, que apaga el patron del fondo alrededor de la
+	 *    tarjeta — sin el, la sombra se pierde contra un fondo de tanto contraste;
+	 * 2) sombra oscura abajo-derecha y 3) luz arriba-izquierda, el par neumorfico.
+	 */
+	--elev-tarjeta:
+		0 0 60px 24px rgba(31, 41, 55, 0.16),
+		18px 18px 40px rgba(31, 41, 55, 0.22),
+		-14px -14px 34px rgba(255, 255, 255, 0.95);
 	--elev-2: 0 2px 6px rgba(31, 41, 55, 0.08);
 	--elev-3: 0 8px 20px rgba(31, 41, 55, 0.1);
 	--elev-4: 0 20px 40px rgba(31, 41, 55, 0.18);
@@ -141,7 +156,13 @@
 		--aviso-texto: #fde68a;
 		--aviso-fondo: #3a2e0b;
 
+		--patron-acento: var(--marca-500);
+
 		--elev-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+		--elev-tarjeta:
+			0 0 60px 24px rgba(0, 0, 0, 0.6),
+			18px 18px 40px rgba(0, 0, 0, 0.9),
+			-14px -14px 34px rgba(255, 255, 255, 0.13);
 		--elev-2: 0 2px 6px rgba(0, 0, 0, 0.45);
 		--elev-3: 0 8px 20px rgba(0, 0, 0, 0.5);
 		--elev-4: 0 20px 40px rgba(0, 0, 0, 0.6);

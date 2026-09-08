@@ -27,4 +27,7 @@ public interface ViajeRepository extends JpaRepository<Viaje, Long> {
 	 * el tiempo de espera entre viajes de ese mismo plan.
 	 */
 	Optional<Viaje> findFirstBySuscripcionIdAndFechaFinIsNotNullOrderByFechaFinDesc(Long suscripcionId);
+
+	/** Viajes en curso ahora mismo: seedea el contador en memoria de UsuariosActivosService al arrancar. */
+	long countByFechaFinIsNull();
 }

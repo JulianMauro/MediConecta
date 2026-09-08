@@ -21,6 +21,7 @@ import com.mediconecta.modulos.membresia.entity.EstadoSuscripcion;
 import com.mediconecta.modulos.membresia.entity.Membresia;
 import com.mediconecta.modulos.membresia.entity.SuscripcionUsuario;
 import com.mediconecta.modulos.membresia.repository.SuscripcionUsuarioRepository;
+import com.mediconecta.modulos.monitoreo.service.UsuariosActivosService;
 import com.mediconecta.modulos.strike.service.StrikeService;
 import com.mediconecta.modulos.usuario.entity.Usuario;
 import com.mediconecta.modulos.usuario.repository.BloqueoCuentaRepository;
@@ -49,11 +50,13 @@ public class ViajeService {
 	private final SuscripcionUsuarioRepository suscripcionUsuarioRepository;
 	private final BloqueoCuentaRepository bloqueoCuentaRepository;
 	private final StrikeService strikeService;
+	private final UsuariosActivosService usuariosActivosService;
 
 	public ViajeService(ViajeRepository viajeRepository, UsuarioRepository usuarioRepository,
 			BicicletaRepository bicicletaRepository, AnclajeRepository anclajeRepository,
 			SuscripcionUsuarioRepository suscripcionUsuarioRepository,
-			BloqueoCuentaRepository bloqueoCuentaRepository, StrikeService strikeService) {
+			BloqueoCuentaRepository bloqueoCuentaRepository, StrikeService strikeService,
+			UsuariosActivosService usuariosActivosService) {
 		this.viajeRepository = viajeRepository;
 		this.usuarioRepository = usuarioRepository;
 		this.bicicletaRepository = bicicletaRepository;
@@ -61,6 +64,7 @@ public class ViajeService {
 		this.suscripcionUsuarioRepository = suscripcionUsuarioRepository;
 		this.bloqueoCuentaRepository = bloqueoCuentaRepository;
 		this.strikeService = strikeService;
+		this.usuariosActivosService = usuariosActivosService;
 	}
 
 	@Transactional
@@ -90,6 +94,7 @@ public class ViajeService {
 		Viaje viaje = viajeRepository.save(new Viaje(usuario, bicicleta, anclajeOrigen, suscripcion));
 		bicicleta.retirarDeAnclaje();
 		anclajeOrigen.liberar();
+		usuariosActivosService.incrementar();
 
 		return ViajeResponse.desde(viaje);
 	}
@@ -109,6 +114,7 @@ public class ViajeService {
 		Bicicleta bicicleta = viaje.getBicicleta();
 		bicicleta.anclarEn(anclajeDestino);
 		anclajeDestino.ocupar();
+		usuariosActivosService.decrementar();
 
 		// El plan ya se pago al contratarlo: lo unico que se cobra aparte es el tiempo excedido.
 		if (viaje.isExcedioTiempo()) {

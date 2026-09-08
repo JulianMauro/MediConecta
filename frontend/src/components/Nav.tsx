@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { RealtimeUsers } from './home/RealtimeUsers';
 
 export function Nav() {
 	const { usuario, logout } = useAuth();
@@ -19,6 +20,8 @@ export function Nav() {
 			<NavLink to="/cuenta">Mi cuenta</NavLink>
 			{usuario.rol === 'ADMIN' && <NavLink to="/admin">Admin</NavLink>}
 			<span className="separador" />
+			{/* Visible para cualquier usuario logueado, en todas las páginas. */}
+			<RealtimeUsers />
 			<span className="nav-usuario">
 				<strong>{usuario.nombre}</strong>
 				{usuario.rol === 'ADMIN' ? 'Administrador' : 'Usuario'}

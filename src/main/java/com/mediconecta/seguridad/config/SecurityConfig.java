@@ -2,6 +2,7 @@ package com.mediconecta.seguridad.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -40,11 +41,14 @@ public class SecurityConfig {
 
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 	private final UserDetailsServiceImpl userDetailsService;
+	private final List<String> corsAllowedOrigins;
 
 	public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-			UserDetailsServiceImpl userDetailsService) {
+			UserDetailsServiceImpl userDetailsService,
+			@Value("${app.cors.allowed-origins}") List<String> corsAllowedOrigins) {
 		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
 		this.userDetailsService = userDetailsService;
+		this.corsAllowedOrigins = corsAllowedOrigins;
 	}
 
 	@Bean
@@ -107,7 +111,7 @@ public class SecurityConfig {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration config = new CorsConfiguration();
-		config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173"));
+		config.setAllowedOrigins(corsAllowedOrigins);
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 		config.setAllowedHeaders(List.of("*"));
 		config.setAllowCredentials(true);

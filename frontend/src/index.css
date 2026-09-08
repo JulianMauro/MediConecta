@@ -20,8 +20,67 @@ body {
 	font-size: var(--txt-cuerpo);
 	line-height: 1.55;
 	color: var(--texto);
-	background: var(--fondo);
 	-webkit-font-smoothing: antialiased;
+
+	/*
+	 * Patrón de puntos entrelazados (Uiverse.io by MikeAndrewDesigner), tal cual el
+	 * original salvo por los colores y el tamaño, que salen de los tokens de marca
+	 * (--patron-base / --patron-acento / --patron-escala), y por la animación.
+	 * Solo se nota en los espacios entre tarjetas: el contenido sigue en superficies
+	 * sólidas (--superficie), así que nunca hay texto encima del patrón.
+	 */
+	/*
+	 * Unico cambio respecto del original (que usa 99%/101%): la banda de desvanecido
+	 * del circulo oscuro se corre 1% hacia afuera. Motivo: la capa 3 dibuja un punto
+	 * violeta del MISMO centro y el MISMO radio (32px) que la mitad de estos circulos
+	 * oscuros, y su borde se apaga entre 98% y 100%. Con 99%/101% ese desvanecido
+	 * violeta asoma justo donde el oscuro ya empezo a hacerse translucido, y queda un
+	 * anillo violeta de ~0.3px. Solo se ve en la mitad del contorno: en la otra mitad
+	 * el fondo de abajo (la franja de la capa 4) ya es violeta y el halo no contrasta.
+	 * Con 100%/102% el oscuro sigue opaco hasta 32px y tapa por completo el borde del
+	 * violeta; el desvanecido se mantiene (2% de ancho) asi que no aparecen escalones.
+	 */
+	--_g: radial-gradient(25% 25% at 25% 25%, var(--patron-base) 100%, rgba(0, 0, 0, 0) 102%);
+	/* El color final (var(--fondo)) es la base sólida detrás de las cuatro capas: el
+	   shorthand "background" resetea background-color a transparent si no se lo pone. */
+	background:
+		var(--_g) var(--patron-escala) var(--patron-escala) / calc(2 * var(--patron-escala))
+			calc(2 * var(--patron-escala)),
+		var(--_g) 0 0 / calc(2 * var(--patron-escala)) calc(2 * var(--patron-escala)),
+		radial-gradient(50% 50%, var(--patron-acento) 98%, rgba(0, 0, 0, 0)) 0 0 / var(--patron-escala)
+			var(--patron-escala),
+		repeating-conic-gradient(var(--patron-acento) 0 50%, var(--patron-base) 0 100%)
+			calc(0.5 * var(--patron-escala)) 0 / calc(2 * var(--patron-escala)) var(--patron-escala)
+			var(--fondo);
+	/* La X de cada capa queda como la fijó el shorthand: la animación solo pisa la Y. */
+	animation: patron-deslizar 30s linear infinite;
+}
+
+/*
+ * Desliza el patron hacia abajo. El desplazamiento total es 2 * --patron-escala:
+ * las capas tienen periodo vertical --patron-escala o 2 * --patron-escala segun
+ * cual, y 2 * --patron-escala es multiplo de ambos — es el primer punto en el que
+ * las CUATRO capas vuelven a quedar exactamente donde empezaron, asi el loop no
+ * se nota (si moviera solo --patron-escala, dos de las cuatro capas quedarian
+ * desfasadas al reiniciar).
+ */
+@keyframes patron-deslizar {
+	from {
+		background-position-y: var(--patron-escala), 0px, 0px, 0px;
+	}
+	to {
+		background-position-y:
+			calc(var(--patron-escala) + 2 * var(--patron-escala)),
+			calc(2 * var(--patron-escala)),
+			calc(2 * var(--patron-escala)),
+			calc(2 * var(--patron-escala));
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	body {
+		animation: none;
+	}
 }
 
 h1,
@@ -351,10 +410,90 @@ label {
 	padding: var(--e-7) var(--e-4) var(--e-8);
 }
 
+/* ---- Contador de usuarios en vivo (fijo en la nav, visible para cualquier usuario) ---- */
+
+.usuarios-activos {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--e-2);
+	padding: var(--e-1) var(--e-3);
+	border-radius: var(--radio-pill);
+	background: var(--superficie-2);
+	border: 1px solid var(--borde);
+	font-size: var(--txt-micro);
+	color: var(--texto);
+	white-space: nowrap;
+	flex-shrink: 0;
+}
+
+.usuarios-activos-punto {
+	width: 7px;
+	height: 7px;
+	border-radius: var(--radio-pill);
+	background: var(--ok-texto);
+	flex-shrink: 0;
+}
+
+.usuarios-activos-texto strong {
+	font-variant-numeric: tabular-nums;
+	color: var(--texto-fuerte);
+}
+
+/* ---- Odómetro: rodillo analógico para números que cambian en vivo ---- */
+
+.odometro {
+	display: inline-flex;
+	font-variant-numeric: tabular-nums;
+	font-weight: 700;
+	color: var(--texto-fuerte);
+}
+
+.odometro-col {
+	position: relative;
+	display: inline-block;
+	height: 1em;
+	width: 0.6em;
+	overflow: hidden;
+	line-height: 1;
+	vertical-align: bottom;
+}
+
+.odometro-tira {
+	display: block;
+	transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+	will-change: transform;
+}
+
+.odometro-tira i {
+	display: block;
+	height: 1em;
+	line-height: 1;
+	font-style: normal;
+	text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.odometro-tira {
+		transition: none;
+	}
+}
+
+@media (max-width: 720px) {
+	/* En mobile la nav ya se envuelve en varias filas: se recorta el texto largo. */
+	.usuarios-activos-texto {
+		white-space: nowrap;
+	}
+}
+
 .centrado {
 	text-align: center;
-	padding: var(--e-7);
+	max-width: 480px;
+	margin: 0 auto;
+	padding: var(--e-6) var(--e-5);
 	color: var(--texto-suave);
+	background: var(--superficie);
+	border-radius: var(--radio-grande);
+	box-shadow: var(--elev-1);
 }
 
 .grilla {
@@ -370,10 +509,10 @@ label {
 
 .tarjeta {
 	background: var(--superficie);
-	border: 1px solid var(--borde);
 	border-radius: var(--radio-grande);
 	padding: var(--e-5);
-	box-shadow: var(--elev-1);
+	/* Sin borde: en neumorfismo el borde duro compite con la sombra suave y arruina el efecto. */
+	box-shadow: var(--elev-tarjeta);
 }
 
 .tarjeta-encabezado {
@@ -442,6 +581,15 @@ label {
 .ayuda {
 	color: var(--texto-suave);
 	font-size: var(--txt-chico);
+}
+
+/* .ayuda "suelto" (hijo directo de .contenido, sin tarjeta debajo): necesita su propio fondo. */
+.contenido > .ayuda {
+	display: inline-block;
+	background: var(--superficie);
+	border-radius: var(--radio);
+	padding: var(--e-2) var(--e-3);
+	box-shadow: var(--elev-1);
 }
 
 .texto-alerta {
@@ -798,9 +946,19 @@ label {
 
 /* ---- Encabezado de pagina ---- */
 
+/*
+ * El fondo de "body" tiene un patrón muy marcado: cualquier texto suelto encima,
+ * sin una superficie sólida detrás, se vuelve ilegible. Estos son los bloques que
+ * quedan directamente sobre ese fondo (no dentro de una .tarjeta), así que llevan
+ * su propia superficie.
+ */
 .encabezado-pagina {
 	margin-bottom: var(--e-6);
 	max-width: 62ch;
+	background: var(--superficie);
+	border-radius: var(--radio-grande);
+	padding: var(--e-5) var(--e-6);
+	box-shadow: var(--elev-tarjeta);
 }
 
 .encabezado-pagina h1 {
@@ -947,9 +1105,14 @@ label {
    ========================================================================== */
 
 .resumen-red {
+	display: inline-block;
 	font-size: var(--txt-chico);
 	color: var(--texto-suave);
+	background: var(--superficie);
+	border-radius: var(--radio);
+	padding: var(--e-3) var(--e-4);
 	margin-bottom: var(--e-4);
+	box-shadow: var(--elev-1);
 }
 
 .resumen-red strong {
@@ -974,6 +1137,10 @@ label {
 	gap: var(--e-2);
 	min-height: var(--target-min);
 	font-weight: 500;
+	background: var(--superficie);
+	border-radius: var(--radio);
+	padding: var(--e-2) var(--e-4);
+	box-shadow: var(--elev-1);
 }
 
 .check input {

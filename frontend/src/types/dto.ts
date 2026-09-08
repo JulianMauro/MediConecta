@@ -254,3 +254,10 @@ export interface MovimientoBicisResponse {
 	destinoAlmacenId: number | null;
 	bicicletaIds: number[];
 }
+
+// ---- monitoreo ----
+
+export interface UsuariosActivosResponse {
+	cantidad: number;
+	timestamp: string;
+}

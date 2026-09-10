@@ -39,7 +39,13 @@ export function CuentaPage() {
 
 	return (
 		<div className="contenido">
-			<h1>Mi cuenta</h1>
+			{/* Igual que el resto de las paginas: el titulo va dentro de una superficie.
+			    Suelto cae sobre el fondo decorativo, que es de altisimo contraste, y el
+			    gradiente del h1 se vuelve ilegible letra por letra. */}
+			<header className="encabezado-pagina">
+				<h1>Mi cuenta</h1>
+				<p className="bajada">Tu plan, tus pagos, tus penalizaciones y el historial de viajes.</p>
+			</header>
 			<div className="grilla">
 				<SuscripcionSection
 					membresias={suscripcion.membresias}

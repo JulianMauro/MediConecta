@@ -104,7 +104,16 @@ export function Modal({ title, description, onClose, children, footer }: Props) 
 						)}
 					</div>
 					<button type="button" className="modal-cerrar" onClick={onClose} aria-label="Cerrar">
-						✕
+						{/* SVG dibujado y no el caracter "✕": un glifo de texto cambia de forma,
+						    peso y alineacion segun la fuente que resuelva el navegador. */}
+						<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+							<path
+								d="M4 4l8 8M12 4l-8 8"
+								stroke="currentColor"
+								strokeWidth="1.75"
+								strokeLinecap="round"
+							/>
+						</svg>
 					</button>
 				</div>
 				<div className="modal-contenido">{children}</div>

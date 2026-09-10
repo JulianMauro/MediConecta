@@ -5,6 +5,7 @@ import { AlmacenesSection } from '../../components/admin/AlmacenesSection';
 import { BicicletasSection } from '../../components/admin/BicicletasSection';
 import { MembresiasSection } from '../../components/admin/MembresiasSection';
 import { MovimientosSection } from '../../components/admin/MovimientosSection';
+import { QrSection } from '../../components/admin/QrSection';
 
 /**
  * Adaptadores entre las rutas del panel y las secciones, que no conocen el router.
@@ -33,4 +34,8 @@ export function AdminMovimientos() {
 
 export function AdminMembresias() {
 	return <MembresiasSection />;
+}
+
+export function AdminQr() {
+	return <QrSection />;
 }

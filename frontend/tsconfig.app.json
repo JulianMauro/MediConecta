@@ -4,7 +4,10 @@
     "target": "es2023",
     "lib": ["ES2023", "DOM"],
     "module": "esnext",
-    "types": ["vite/client"],
+    /* "types" acota que paquetes de @types se cargan como globales. Al estar
+       enumerado, agregar @types/google.maps a package.json no alcanza: hay que
+       nombrarlo aca o TS no ve el namespace "google". */
+    "types": ["vite/client", "google.maps"],
     "allowArbitraryExtensions": true,
     "skipLibCheck": true,
 

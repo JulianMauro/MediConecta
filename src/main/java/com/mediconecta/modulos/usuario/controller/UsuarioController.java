@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +19,7 @@ import com.mediconecta.modulos.usuario.dto.UsuarioRequest;
 import com.mediconecta.modulos.usuario.dto.UsuarioResponse;
 import com.mediconecta.modulos.usuario.dto.UsuarioUpdateRequest;
 import com.mediconecta.modulos.usuario.service.UsuarioService;
+import com.mediconecta.seguridad.UserPrincipal;
 
 import jakarta.validation.Valid;
 
@@ -46,9 +48,12 @@ public class UsuarioController {
 		return ResponseEntity.ok(usuarioService.listar());
 	}
 
+	/** Sin @PreAuthorize: el permiso no es por rol sino por propiedad, y eso se
+	    resuelve en el service (mismo patron que pagos y notificaciones). */
 	@GetMapping("/{id}")
-	public ResponseEntity<UsuarioResponse> obtener(@PathVariable Long id) {
-		return ResponseEntity.ok(usuarioService.obtenerPorId(id));
+	public ResponseEntity<UsuarioResponse> obtener(@AuthenticationPrincipal UserPrincipal principal,
+			@PathVariable Long id) {
+		return ResponseEntity.ok(usuarioService.obtenerPorId(principal, id));
 	}
 
 	@PutMapping("/{id}")

@@ -2,12 +2,14 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Nav } from './components/Nav';
+import { EstiloToggle } from './components/ui/EstiloToggle';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { HomePage } from './pages/HomePage';
 import { CuentaPage } from './pages/CuentaPage';
 import { PlanesPage } from './pages/PlanesPage';
 import { EstacionesPage } from './pages/EstacionesPage';
+import { MapPage } from './pages/MapPage';
 import { AdminPage } from './pages/AdminPage';
 import {
 	AdminAlmacenes,
@@ -15,6 +17,7 @@ import {
 	AdminFlota,
 	AdminMembresias,
 	AdminMovimientos,
+	AdminQr,
 } from './pages/admin/secciones';
 
 export default function App() {
@@ -26,6 +29,8 @@ export default function App() {
 					Saltar al contenido
 				</a>
 				<Nav />
+				{/* Fuera de <main> y del Routes: acompaña a todas las paginas, con y sin sesion. */}
+				<EstiloToggle />
 				<main id="contenido-principal" tabIndex={-1}>
 					<Routes>
 						<Route path="/login" element={<LoginPage />} />
@@ -43,6 +48,14 @@ export default function App() {
 							element={
 								<ProtectedRoute>
 									<EstacionesPage />
+								</ProtectedRoute>
+							}
+						/>
+						<Route
+							path="/mapa"
+							element={
+								<ProtectedRoute>
+									<MapPage />
 								</ProtectedRoute>
 							}
 						/>
@@ -76,6 +89,7 @@ export default function App() {
 							<Route path="flota" element={<AdminFlota />} />
 							<Route path="movimientos" element={<AdminMovimientos />} />
 							<Route path="membresias" element={<AdminMembresias />} />
+							<Route path="qr" element={<AdminQr />} />
 						</Route>
 						<Route path="*" element={<Navigate to="/" replace />} />
 					</Routes>

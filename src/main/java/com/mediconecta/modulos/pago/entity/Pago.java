@@ -75,15 +75,36 @@ public class Pago {
 		this.fechaCreacion = Instant.now();
 	}
 
-	public void confirmar(String referenciaPasarela) {
+	/**
+	 * Confirma el pago. Devuelve true solo si ESTE llamado hizo la transicion.
+	 *
+	 * La guarda no es defensiva de mas: cuando entre Mercado Pago, la confirmacion
+	 * va a llegar por webhook, y MP no garantiza entrega unica — documenta que las
+	 * notificaciones pueden repetirse y llegar desordenadas, y las reintenta hasta
+	 * recibir un 2xx. Sin esto, cada reintento sobre un pago de MEMBRESIA generaba
+	 * una suscripcion nueva. Tambien cubre el doble clic y el reintento de red.
+	 *
+	 * Que devuelva boolean en vez de tirar excepcion es a proposito: un reintento
+	 * no es un error, es el caso normal. Quien llama decide que hacer con el.
+	 */
+	public boolean confirmar(String referenciaPasarela) {
+		if (this.estado == EstadoPago.PAGADO) {
+			return false;
+		}
 		this.estado = EstadoPago.PAGADO;
 		this.referenciaPasarela = referenciaPasarela;
 		this.fechaResolucion = Instant.now();
+		return true;
 	}
 
-	public void rechazar() {
+	/** Un pago ya resuelto no vuelve atras: rechazar solo aplica a los PENDIENTE. */
+	public boolean rechazar() {
+		if (this.estado != EstadoPago.PENDIENTE) {
+			return false;
+		}
 		this.estado = EstadoPago.RECHAZADO;
 		this.fechaResolucion = Instant.now();
+		return true;
 	}
 
 	public Long getId() {

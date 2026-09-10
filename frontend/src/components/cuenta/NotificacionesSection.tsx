@@ -30,6 +30,9 @@ export function NotificacionesSection() {
 						)}
 					</li>
 				))}
+				{notificaciones.length === 0 && (
+					<li className="tabla-vacia">Cuando el sistema tenga algo que avisarte, va a aparecer acá.</li>
+				)}
 			</ul>
 		</section>
 	);

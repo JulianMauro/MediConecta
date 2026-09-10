@@ -17,6 +17,17 @@
 	--marca-600: #9333ea;
 	--marca-800: #6b21a8;
 
+	/* ---- Primitivos: acidos (paleta psicodelica) ---- */
+	/*
+	 * No son colores de marca ni de estado: existen solo para lo decorativo
+	 * (fondo, bordes animados, glows). Nunca llevan texto encima.
+	 */
+	--acido-cian: #22d3ee;
+	--acido-magenta: #f0abfc;
+	--acido-lima: #a3e635;
+	/* Version oscura del cian: la clara no llega a contraste sobre superficie blanca. */
+	--acido-cian-oscuro: #0e7490;
+
 	/* ---- Primitivos: tinta ---- */
 	--tinta-900: #1f2937;
 	--tinta-700: #374151;
@@ -42,10 +53,90 @@
 	--borde: var(--tinta-200);
 	--borde-fuerte: var(--tinta-400);
 
-	/* ---- Patrón de puntos del fondo (ver "body" en index.css) ---- */
+	/* ---- Patrón de puntos del fondo (ver "body::before" en index.css) ---- */
 	--patron-escala: 64px;
 	--patron-base: var(--fondo);
 	--patron-acento: var(--marca-500);
+
+	/* ---- Capa psicodélica ---- */
+	/*
+	 * --psico es el control maestro de intensidad: multiplica todas las opacidades
+	 * decorativas. 0 = la app queda sobria sin tocar una sola regla mas; 1 = full.
+	 * Se puede pisar por tema, por pagina o desde JS (document.documentElement.style).
+	 */
+	--psico: 1;
+	--marca-alt: var(--acido-cian);
+	/* Las tres manchas del mesh gradient que respira detrás del patrón. */
+	--mesh-1: var(--acido-cian);
+	--mesh-2: var(--acido-magenta);
+	--mesh-3: var(--marca-500);
+	/*
+	 * En claro el mesh tiene que oscurecer (multiply) y en oscuro iluminar (screen):
+	 * al reves lava el fondo y se pierde el contraste de las superficies.
+	 */
+	--psico-mezcla: multiply;
+	--psico-mesh-opacidad: 0.3;
+	/* Duración del giro de tono del patrón. Larga a propósito: tiene que ser un
+	   cambio que se percibe al volver a mirar, no un parpadeo. */
+	--psico-giro: 60s;
+	/*
+	 * Atenuador del mesh por fondo: sobre las rayas, que ya son de maxima saturacion,
+	 * el mesh a opacidad plena las convierte en barro. Se multiplica, no se reemplaza,
+	 * para no tener que repetir el valor de cada tema.
+	 */
+	--psico-mesh-factor: 1;
+
+	/* ---- Fondo "prisma" (predeterminado) ---- */
+	/*
+	 * El espectro de la refraccion, en orden fisico. No es una paleta de marca: es
+	 * UN evento cromatico, y su fuerza viene de todo el negro que lo rodea. Se usa
+	 * completo solo en la banda del fondo y en los indicadores de "estas aca";
+	 * nunca como relleno de superficie.
+	 */
+	--esp-1: #ff2e2e;
+	--esp-2: #ff8a00;
+	--esp-3: #ffe600;
+	--esp-4: #3ddc84;
+	--esp-5: #2e8bff;
+	--esp-6: #a855f7;
+
+	/* El campo. Casi negro con una deriva fria: el negro plano se ve muerto. */
+	--prisma-campo: #07070d;
+	--prisma-campo-alto: #14121f;
+	/* Ancho angular de la banda refractada, en porcentaje del gradiente. */
+	--prisma-banda: 7%;
+
+	/* ---- Fondo "rayas" (Uiverse.io by ariba_9087) ---- */
+	/* Los seis colores del gradiente diagonal. Son colores puros a proposito: es un
+	   fondo decorativo, nunca lleva texto encima (todo va sobre --superficie). */
+	--rayas-base: #121212;
+	--rayas-1: #ff6347;
+	--rayas-2: #ff1493;
+	--rayas-3: #8a2be2;
+	--rayas-4: #00bfff;
+	--rayas-5: #ff4500;
+	--rayas-6: #32cd32;
+	/* Lado del mosaico. El desplazamiento de la animacion es exactamente este valor
+	   en x e y, que es lo que hace que el ciclo cierre sin salto. */
+	--rayas-escala: 40px;
+	--rayas-velocidad: 4s;
+
+	/* ---- Tarjetas modo "ticket" (Uiverse.io by dexter-st) ---- */
+	/*
+	 * Cuanto tapa el velo de lectura al holograma. Es el unico numero que hay que
+	 * tocar para regular el efecto: mas bajo se ve mas tornasol y menos se lee el
+	 * texto. Por debajo de ~75% el contraste del cuerpo deja de ser aceptable.
+	 */
+	--ticket-velo: 86%;
+	/* Duracion del pulso de flotacion de las tarjetas. */
+	--ticket-pulso: 6s;
+	/*
+	 * Los tres colores del gradiente de los h1. En claro son las versiones oscuras:
+	 * el titulo es texto, no decoracion, y tiene que seguir contrastando 4.5:1.
+	 */
+	--titulo-a: var(--marca-800);
+	--titulo-b: var(--acido-cian-oscuro);
+	--titulo-c: var(--marca-600);
 
 	/* ---- Semánticos: texto ---- */
 	--texto: var(--tinta-900);
@@ -73,6 +164,8 @@
 	/* ---- Tipografía ---- */
 	--fuente: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
 	--fuente-mono: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+	/* Display: solo para el logo y los h1. El cuerpo nunca la usa (ilegible en bloque). */
+	--fuente-display: 'Righteous', 'Segoe UI', system-ui, sans-serif;
 	--txt-display: 3rem;
 	--txt-h1: 2rem;
 	--txt-h2: 1.375rem;
@@ -97,6 +190,36 @@
 	--radio: 10px;
 	--radio-grande: 16px;
 	--radio-pill: 999px;
+
+	/* ---- Formas ---- */
+	/*
+	 * El lenguaje de formas de la app. Hasta ahora todo lo psicodelico vivia en la
+	 * textura del fondo y cada contenedor era el mismo rectangulo redondeado: por
+	 * eso se leia como una app comun sobre un fondo ruidoso.
+	 *
+	 * La regla es una sola y por eso se lee como sistema y no como capricho: radio
+	 * grande en dos esquinas opuestas, chico en las otras dos. Da un contorno que
+	 * fluye en diagonal, como una gota apretada dentro de un rectangulo. La version
+	 * "alt" es la misma forma espejada, para alternar en grillas y que la fila no
+	 * quede repitiendo el mismo gesto.
+	 *
+	 * No toca el texto ni el area utilizable, asi que no cuesta legibilidad: es
+	 * exactamente el tipo de exceso que el producto se puede permitir.
+	 */
+	--forma-panel: 34px 10px 34px 10px;
+	--forma-panel-alt: 10px 34px 10px 34px;
+	--forma-tarjeta: 26px 8px 26px 8px;
+	--forma-tarjeta-alt: 8px 26px 8px 26px;
+	--forma-control: 14px 5px 14px 5px;
+
+	/*
+	 * Cuanto pesa el fondo decorativo. Es el dial que faltaba: --psico ya atenuaba
+	 * mesh, glows y bordes, pero el patron de fondo se pintaba siempre al 100%, o
+	 * sea que el elemento MAS ruidoso de la pantalla era el unico que ignoraba el
+	 * control maestro de intensidad. Con esto el patron se mezcla contra --fondo.
+	 * 1 = como estaba; 0 = fondo liso.
+	 */
+	--fondo-intensidad: 1;
 
 	/* ---- Elevación ---- */
 	--elev-1: 0 1px 2px rgba(31, 41, 55, 0.06);
@@ -157,6 +280,13 @@
 		--aviso-fondo: #3a2e0b;
 
 		--patron-acento: var(--marca-500);
+		--prisma-campo: #05050a;
+		--prisma-campo-alto: #16142260;
+		--psico-mezcla: screen;
+		--psico-mesh-opacidad: 0.42;
+		--titulo-a: var(--marca-300);
+		--titulo-b: var(--acido-cian);
+		--titulo-c: var(--acido-magenta);
 
 		--elev-1: 0 1px 2px rgba(0, 0, 0, 0.4);
 		--elev-tarjeta:

@@ -7,12 +7,36 @@ export interface AdminContexto {
 	notificarCambio: () => void;
 }
 
-const SECCIONES = [
-	{ to: 'estaciones', label: 'Estaciones', desc: 'Altas, anclajes y bajas' },
-	{ to: 'almacenes', label: 'Almacenes', desc: 'Depósitos de la flota' },
-	{ to: 'flota', label: 'Flota', desc: 'Bicicletas y su estado' },
-	{ to: 'movimientos', label: 'Movimientos', desc: 'Traslados en lote' },
-	{ to: 'membresias', label: 'Membresías', desc: 'Planes que se ofrecen' },
+/**
+ * Las seis secciones agrupadas por lo que administran, y dentro de cada grupo
+ * en el orden en que se usan de verdad.
+ *
+ * Antes eran una lista plana en el orden en que se fueron programando, y el
+ * salto de "Movimientos" a "Membresías" a "Generar QR" no lo explicaba nada.
+ * Los QR son stickers que se pegan en las bicis, asi que pertenecen a Flota y
+ * no a un cajon de herramientas sueltas; Membresías queda sola porque es el
+ * unico rubro comercial, y eso es informacion, no un hueco a rellenar.
+ */
+const GRUPOS = [
+	{
+		titulo: 'Infraestructura',
+		secciones: [
+			{ to: 'estaciones', label: 'Estaciones', desc: 'Altas, anclajes y bajas' },
+			{ to: 'almacenes', label: 'Almacenes', desc: 'Depósitos de la flota' },
+		],
+	},
+	{
+		titulo: 'Flota',
+		secciones: [
+			{ to: 'flota', label: 'Bicicletas', desc: 'Estado y ubicación' },
+			{ to: 'movimientos', label: 'Movimientos', desc: 'Traslados en lote' },
+			{ to: 'qr', label: 'Generar QR', desc: 'Stickers para las bicis' },
+		],
+	},
+	{
+		titulo: 'Comercial',
+		secciones: [{ to: 'membresias', label: 'Membresías', desc: 'Planes que se ofrecen' }],
+	},
 ];
 
 /**
@@ -31,16 +55,26 @@ export function AdminPage() {
 			</header>
 
 			<nav className="admin-sidebar" aria-label="Secciones del panel">
-				<ul>
-					{SECCIONES.map((s) => (
-						<li key={s.to}>
-							<NavLink to={s.to}>
-								<span className="admin-sidebar-label">{s.label}</span>
-								<span className="admin-sidebar-desc">{s.desc}</span>
-							</NavLink>
-						</li>
-					))}
-				</ul>
+				{GRUPOS.map((g) => (
+					<section key={g.titulo} className="admin-sidebar-grupo">
+						{/* aria-labelledby y no aria-label: el titulo del grupo ya esta
+						    escrito, y asi el lector de pantalla anuncia el mismo texto
+						    que se ve en pantalla. */}
+						<h2 id={`grupo-${g.titulo}`} className="admin-sidebar-titulo">
+							{g.titulo}
+						</h2>
+						<ul aria-labelledby={`grupo-${g.titulo}`}>
+							{g.secciones.map((s) => (
+								<li key={s.to}>
+									<NavLink to={s.to}>
+										<span className="admin-sidebar-label">{s.label}</span>
+										<span className="admin-sidebar-desc">{s.desc}</span>
+									</NavLink>
+								</li>
+							))}
+						</ul>
+					</section>
+				))}
 			</nav>
 
 			<div className="admin-panel">

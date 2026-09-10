@@ -72,52 +72,55 @@ export function MembresiasSection() {
 				<button onClick={abrirCrear}>+ Nueva membresía</button>
 			</div>
 
-			<table className="tabla">
-				<caption>Planes de membresía configurados en el sistema</caption>
-				<thead>
-					<tr>
-						<th scope="col">Nombre</th>
-						<th scope="col">Tipo</th>
-						<th scope="col">Dura</th>
-						<th scope="col">Min./viaje</th>
-						<th scope="col">Viajes/día</th>
-						<th scope="col">Espera</th>
-						<th scope="col">Precio</th>
-						<th scope="col">$/min extra</th>
-						<th scope="col">Activa</th>
-						<th scope="col"><span className="solo-lectores">Acciones</span></th>
-					</tr>
-				</thead>
-				<tbody>
-					{membresias.map((m) => (
-						<tr key={m.id}>
-							<td>{m.nombre}</td>
-							<td>{m.tipo}</td>
-							<td>{m.duracionDias} día(s)</td>
-							<td>{m.tiempoPermitidoMinutos}</td>
-							<td>{m.viajesPorDia}</td>
-							<td>{m.tiempoEsperaMinutos} min</td>
-							<td>${m.precio}</td>
-							<td>${m.tarifaMinutoExtra}</td>
-							<td>{m.activa ? 'sí' : 'no'}</td>
-							<td>
-								{m.activa && (
-									<button className="boton-chico" onClick={() => desactivar(m.id)}>
-										Desactivar
-									</button>
-								)}
-							</td>
-						</tr>
-					))}
-					{membresias.length === 0 && (
+			{/* La tabla scrollea dentro de su caja: sin esto se desborda de la tarjeta. */}
+			<div className="tabla-scroll">
+				<table className="tabla">
+					<caption>Planes de membresía configurados en el sistema</caption>
+					<thead>
 						<tr>
-							<td colSpan={10} className="ayuda">
-								Todavía no hay membresías.
-							</td>
+							<th scope="col">Nombre</th>
+							<th scope="col">Tipo</th>
+							<th scope="col">Dura</th>
+							<th scope="col">Min./viaje</th>
+							<th scope="col">Viajes/día</th>
+							<th scope="col">Espera</th>
+							<th scope="col">Precio</th>
+							<th scope="col">$/min extra</th>
+							<th scope="col">Activa</th>
+							<th scope="col"><span className="solo-lectores">Acciones</span></th>
 						</tr>
-					)}
-				</tbody>
-			</table>
+					</thead>
+					<tbody>
+						{membresias.map((m) => (
+							<tr key={m.id}>
+								<td>{m.nombre}</td>
+								<td>{m.tipo}</td>
+								<td>{m.duracionDias} día(s)</td>
+								<td>{m.tiempoPermitidoMinutos}</td>
+								<td>{m.viajesPorDia}</td>
+								<td>{m.tiempoEsperaMinutos} min</td>
+								<td>${m.precio}</td>
+								<td>${m.tarifaMinutoExtra}</td>
+								<td>{m.activa ? 'sí' : 'no'}</td>
+								<td>
+									{m.activa && (
+										<button className="boton-chico" onClick={() => desactivar(m.id)}>
+											Desactivar
+										</button>
+									)}
+								</td>
+							</tr>
+						))}
+						{membresias.length === 0 && (
+							<tr>
+								<td colSpan={10} className="ayuda">
+									Todavía no hay membresías.
+								</td>
+							</tr>
+						)}
+					</tbody>
+				</table>
+			</div>
 
 			{modalAbierto && (
 				<Modal

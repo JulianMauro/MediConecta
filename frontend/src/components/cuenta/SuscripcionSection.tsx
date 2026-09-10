@@ -1,7 +1,16 @@
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ComparativaPlanes } from '../planes/ComparativaPlanes';
 import type { useSuscripcion } from '../../hooks/useSuscripcion';
 import type { SuscripcionResponse } from '../../types/dto';
+
+/*
+ * El historial se pagina en el cliente: el backend devuelve la lista completa y
+ * son pocas filas por usuario. Si algun dia crece, esto se cambia por un endpoint
+ * paginado sin tocar el resto del componente.
+ */
+const VISIBLES_INICIAL = 5;
+const INCREMENTO = 10;
 
 const ESTADO_LABEL: Record<SuscripcionResponse['estado'], string> = {
 	ACTIVA: 'Activo',
@@ -24,9 +33,43 @@ export function SuscripcionSection({
 	contratar,
 	cancelar,
 }: Props) {
+	const [visibles, setVisibles] = useState(VISIBLES_INICIAL);
 
+	/*
+	 * Mas reciente primero. El backend las devuelve en orden de insercion, que es
+	 * justo al reves de lo que se quiere leer: lo primero que interesa es la ultima
+	 * suscripcion, no la primera que se contrato.
+	 *
+	 * Se copia con [...] antes de ordenar porque sort() muta el array, y este llega
+	 * por props desde el hook: mutarlo seria tocar el estado de otro componente.
+	 */
+	const ordenadas = useMemo(
+		() => [...suscripciones].sort((a, b) => new Date(b.fechaInicio).getTime() - new Date(a.fechaInicio).getTime()),
+		[suscripciones],
+	);
+
+	/*
+	 * membresiaId -> nombre. La suscripcion solo guarda el id, y '#3' no le dice
+	 * nada a nadie. Se resuelve con la lista de membresias que ya llega por props,
+	 * que incluye tambien las desactivadas: un plan dado de baja tiene que seguir
+	 * mostrando su nombre en el historial de quien lo contrato.
+	 */
+	const nombrePlan = useMemo(() => {
+		const porId = new Map(membresias.map((m) => [m.id, m.nombre]));
+		// Si el plan no esta en la lista, el id es mejor que una celda vacia.
+		return (id: number) => porId.get(id) ?? `Plan #${id}`;
+	}, [membresias]);
+
+	const enPantalla = ordenadas.slice(0, visibles);
+	const restantes = ordenadas.length - enPantalla.length;
+
+	/*
+	 * seccion-ancha: ocupa las dos columnas de la grilla. Adentro va la comparativa
+	 * de planes, que es una tabla de varias columnas con un ancho minimo; en media
+	 * grilla no entra y aparece un scroll horizontal dentro de la tarjeta.
+	 */
 	return (
-		<section className="tarjeta">
+		<section className="tarjeta seccion-ancha">
 			<h2>Suscripción</h2>
 			<p className="ayuda">
 				Sin un plan vigente no podés sacar una bici. Un plan te da minutos por viaje, una cantidad de viajes por día, y
@@ -55,7 +98,10 @@ export function SuscripcionSection({
 			{suscripciones.length > 0 && (
 				<div className="tabla-scroll">
 					<table className="tabla">
-						<caption>Historial de suscripciones</caption>
+						<caption>
+							Historial de suscripciones — {enPantalla.length} de {ordenadas.length}, de la más reciente a la
+							más vieja
+						</caption>
 						<thead>
 							<tr>
 								<th scope="col">Plan</th>
@@ -68,9 +114,9 @@ export function SuscripcionSection({
 							</tr>
 						</thead>
 						<tbody>
-							{suscripciones.map((s) => (
+							{enPantalla.map((s) => (
 								<tr key={s.id}>
-									<th scope="row">#{s.membresiaId}</th>
+									<th scope="row">{nombrePlan(s.membresiaId)}</th>
 									<td>{ESTADO_LABEL[s.estado]}</td>
 									<td>{new Date(s.fechaInicio).toLocaleDateString()}</td>
 									<td>{s.fechaFin ? new Date(s.fechaFin).toLocaleString() : '-'}</td>
@@ -86,6 +132,16 @@ export function SuscripcionSection({
 						</tbody>
 					</table>
 				</div>
+			)}
+
+			{restantes > 0 && (
+				<button
+					type="button"
+					className="boton-secundario"
+					onClick={() => setVisibles((n) => n + INCREMENTO)}
+				>
+					Mostrar {Math.min(INCREMENTO, restantes)} más
+				</button>
 			)}
 		</section>
 	);

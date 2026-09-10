@@ -64,6 +64,13 @@ export interface EstacionRequest {
 	capacidad: number;
 }
 
+/** Datos editables. Sin coordenadas: son derivadas de la direccion (las recalcula el back). */
+export interface EstacionUpdateRequest {
+	nombre: string;
+	direccion: string;
+	capacidad: number;
+}
+
 export interface EstacionResponse {
 	id: number;
 	nombre: string;

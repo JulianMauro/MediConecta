@@ -49,6 +49,37 @@ public class Estacion {
 		this.activa = false;
 	}
 
+	/** Datos editables desde el panel. La capacidad la valida el service contra los anclajes ya creados. */
+	public void actualizarDatos(String nombre, String direccion, int capacidad) {
+		this.nombre = nombre;
+		this.direccion = direccion;
+		this.capacidad = capacidad;
+	}
+
+	/**
+	 * Borra las coordenadas.
+	 *
+	 * Se usa cuando cambia la direccion y no se pueden resolver las nuevas: dejar
+	 * las viejas seria peor que no tener ninguna, porque la estacion aparaceria en
+	 * el mapa en un lugar donde ya no esta.
+	 */
+	public void limpiarCoordenadas() {
+		this.latitud = null;
+		this.longitud = null;
+	}
+
+	/**
+	 * Completa las coordenadas resueltas a partir de la direccion.
+	 *
+	 * Existe como metodo propio y no como setter porque la direccion y las
+	 * coordenadas tienen que describir el mismo lugar: se asignan juntas, nunca
+	 * una sin la otra.
+	 */
+	public void asignarCoordenadas(double latitud, double longitud) {
+		this.latitud = latitud;
+		this.longitud = longitud;
+	}
+
 	public Long getId() {
 		return id;
 	}

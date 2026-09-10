@@ -14,7 +14,12 @@ export function Field({ label, helpText, required, htmlFor, children }: Props) {
 		<div className="campo">
 			<label htmlFor={htmlFor}>
 				{label}
-				{required && <span className="campo-requerido"> *</span>}
+				{required && <span className="solo-lectores"> (obligatorio)</span>}
+				{required && (
+					<span className="campo-requerido" aria-hidden="true">
+						*
+					</span>
+				)}
 			</label>
 			{children}
 			{helpText && <p className="campo-ayuda">{helpText}</p>}

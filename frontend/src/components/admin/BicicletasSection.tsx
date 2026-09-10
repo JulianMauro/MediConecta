@@ -68,34 +68,37 @@ export function BicicletasSection({ refrescarSenal }: Props) {
 			</div>
 			{almacenes.length === 0 && <p className="ayuda">Creá un almacén primero: toda bici nueva necesita uno.</p>}
 
-			<table className="tabla">
-				<caption>Bicicletas de la flota, con su estado y ubicación actual</caption>
-				<thead>
-					<tr>
-						<th scope="col">Código</th>
-						<th scope="col">Estado</th>
-						<th scope="col">Ubicación</th>
-					</tr>
-				</thead>
-				<tbody>
-					{bicicletas.map((b) => (
-						<tr key={b.id}>
-							<td>{b.codigo}</td>
-							<td>
-								<span className={`pill pill-${b.estado.toLowerCase()}`}>{ESTADO_LABEL[b.estado]}</span>
-							</td>
-							<td>{b.anclajeId ? `Anclaje #${b.anclajeId}` : b.almacenId ? `Almacén #${b.almacenId}` : '-'}</td>
-						</tr>
-					))}
-					{bicicletas.length === 0 && (
+			{/* La tabla scrollea dentro de su caja: sin esto se desborda de la tarjeta. */}
+			<div className="tabla-scroll">
+				<table className="tabla">
+					<caption>Bicicletas de la flota, con su estado y ubicación actual</caption>
+					<thead>
 						<tr>
-							<td colSpan={3} className="ayuda">
-								Todavía no hay bicicletas.
-							</td>
+							<th scope="col">Código</th>
+							<th scope="col">Estado</th>
+							<th scope="col">Ubicación</th>
 						</tr>
-					)}
-				</tbody>
-			</table>
+					</thead>
+					<tbody>
+						{bicicletas.map((b) => (
+							<tr key={b.id}>
+								<td>{b.codigo}</td>
+								<td>
+									<span className={`pill pill-${b.estado.toLowerCase()}`}>{ESTADO_LABEL[b.estado]}</span>
+								</td>
+								<td>{b.anclajeId ? `Anclaje #${b.anclajeId}` : b.almacenId ? `Almacén #${b.almacenId}` : '-'}</td>
+							</tr>
+						))}
+						{bicicletas.length === 0 && (
+							<tr>
+								<td colSpan={3} className="ayuda">
+									Todavía no hay bicicletas.
+								</td>
+							</tr>
+						)}
+					</tbody>
+				</table>
+			</div>
 
 			{modalAbierto && (
 				<Modal

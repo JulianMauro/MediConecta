@@ -12,6 +12,7 @@ import com.mediconecta.modulos.usuario.dto.UsuarioRequest;
 import com.mediconecta.modulos.usuario.dto.UsuarioResponse;
 import com.mediconecta.modulos.usuario.dto.UsuarioUpdateRequest;
 import com.mediconecta.modulos.usuario.entity.Rol;
+import com.mediconecta.seguridad.UserPrincipal;
 import com.mediconecta.modulos.usuario.entity.Usuario;
 import com.mediconecta.modulos.usuario.repository.UsuarioRepository;
 
@@ -76,6 +77,25 @@ public class UsuarioService {
 
 	@Transactional(readOnly = true)
 	public UsuarioResponse obtenerPorId(Long id) {
+		return UsuarioResponse.desde(buscar(id));
+	}
+
+	/**
+	 * Version con control de acceso: solo el propio usuario o un ADMIN.
+	 *
+	 * Sin esto, cualquier CLIENTE autenticado podia iterar ids y leer el email, el
+	 * DNI, el telefono y el rol de todos los usuarios del sistema.
+	 *
+	 * El permiso se evalua ANTES de buscar la fila a proposito: si se buscara
+	 * primero, un id inexistente daria 404 y uno ajeno 403, y esa diferencia sola
+	 * alcanza para enumerar que ids existen.
+	 */
+	@Transactional(readOnly = true)
+	public UsuarioResponse obtenerPorId(UserPrincipal solicitante, Long id) {
+		boolean esElMismo = id.equals(solicitante.getId());
+		if (!esElMismo && solicitante.getRol() != Rol.ADMIN) {
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "no podes ver los datos de otro usuario");
+		}
 		return UsuarioResponse.desde(buscar(id));
 	}
 

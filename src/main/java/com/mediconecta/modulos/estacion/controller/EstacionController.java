@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mediconecta.modulos.estacion.dto.AnclajeRequest;
 import com.mediconecta.modulos.estacion.dto.AnclajeResponse;
 import com.mediconecta.modulos.estacion.dto.EstacionRequest;
+import com.mediconecta.modulos.estacion.dto.EstacionUpdateRequest;
 import com.mediconecta.modulos.estacion.dto.EstacionResponse;
 import com.mediconecta.modulos.estacion.service.AnclajeService;
 import com.mediconecta.modulos.estacion.service.EstacionService;
@@ -49,6 +51,20 @@ public class EstacionController {
 	@GetMapping("/{id}")
 	public ResponseEntity<EstacionResponse> obtener(@PathVariable Long id) {
 		return ResponseEntity.ok(estacionService.obtenerPorId(id));
+	}
+
+	@PutMapping("/{id}")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<EstacionResponse> actualizar(@PathVariable Long id,
+			@Valid @RequestBody EstacionUpdateRequest request) {
+		return ResponseEntity.ok(estacionService.actualizar(id, request));
+	}
+
+	/** Completa las coordenadas de una estacion existente a partir de su direccion. */
+	@PostMapping("/{id}/geocodificar")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<EstacionResponse> geocodificar(@PathVariable Long id) {
+		return ResponseEntity.ok(estacionService.geocodificar(id));
 	}
 
 	@DeleteMapping("/{id}")

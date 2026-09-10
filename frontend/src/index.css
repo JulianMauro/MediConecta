@@ -14,6 +14,15 @@ html {
 	-webkit-text-size-adjust: 100%;
 }
 
+/*
+ * El fondo real de la pagina lo pinta html, no body: los dos pseudo-elementos de
+ * body son "position: fixed" con z-index negativo, y si body tuviera fondo propio
+ * los taparia (el fondo del elemento se pinta despues que sus hijos negativos).
+ */
+html {
+	background: var(--fondo);
+}
+
 body {
 	margin: 0;
 	font-family: var(--fuente);
@@ -21,14 +30,157 @@ body {
 	line-height: 1.55;
 	color: var(--texto);
 	-webkit-font-smoothing: antialiased;
+	/* Sin fondo propio: ver el comentario de html. */
+	background: none;
+}
 
+/* ==========================================================================
+   Fondo psicodelico — dos capas fijas detras de toda la app
+   ==========================================================================
+   Las dos son "fixed": no scrollean con el contenido, asi la app se siente una
+   ventana que se mueve sobre un fondo quieto, y ademas no crecen con la pagina.
+   Van en pseudo-elementos y no en body porque el filtro de cada una tiene que
+   afectar SOLO al fondo: un filter en body tiñe tambien el texto y las tarjetas.
+   Ninguna recibe eventos de mouse (pointer-events: none). */
+
+/*
+ * Capa 1 (z-index -2): el fondo propiamente dicho. Hay dos y se eligen con el
+ * atributo data-fondo del <html> (ver lib/fondo.ts y el boton FondoToggle):
+ *   sin atributo o "rayas" -> gradiente diagonal animado (el predeterminado)
+ *   "puntos"               -> patron de puntos entrelazados
+ * Lo que comparten (posicion, tamaño, que no reciba clicks) vive aca; cada fondo
+ * solo aporta su "background" y su animacion.
+ */
+body::before {
+	content: '';
+	position: fixed;
 	/*
-	 * Patrón de puntos entrelazados (Uiverse.io by MikeAndrewDesigner), tal cual el
-	 * original salvo por los colores y el tamaño, que salen de los tokens de marca
-	 * (--patron-base / --patron-acento / --patron-escala), y por la animación.
-	 * Solo se nota en los espacios entre tarjetas: el contenido sigue en superficies
-	 * sólidas (--superficie), así que nunca hay texto encima del patrón.
+	 * Sobredimensionada: el fondo NO se mueve cambiando background-position sino con
+	 * transform, y para eso tiene que sobrar dibujo por los cuatro lados o al
+	 * desplazarse asomaria el borde. El margen es un mosaico grande del patron de
+	 * puntos (2 x 64px), que alcanza de sobra para el de rayas (40px).
+	 *
+	 * Por que transform y no background-position: mover el fondo obliga a repintar
+	 * la ventana entera en cada cuadro; transform lo resuelve la GPU componiendo una
+	 * textura que ya esta dibujada. Es el mismo dibujo y el mismo movimiento, pero
+	 * uno cuesta un repintado por cuadro y el otro no cuesta ninguno.
 	 */
+	inset: calc(-2 * var(--patron-escala));
+	z-index: -2;
+	pointer-events: none;
+	/* transform: translateZ(0) fuerza capa propia una vez; will-change permanente
+	   reservaria memoria de compositor sin que haga falta. */
+	transform: translateZ(0);
+}
+
+/*
+ * Fondo "rayas" — PREDETERMINADO. Uiverse.io by ariba_9087.
+ *
+ * La lista de paradas alterna cortes duros y mezclas suaves, y eso no es casual:
+ * dos colores en el MISMO porcentaje (25% y 25%) dan un borde neto, mientras que
+ * dos colores en porcentajes distintos (25% -> 50%) se funden. De ahi que la
+ * diagonal se lea como cintas y no como un arcoiris parejo. Se respeta tal cual.
+ *
+ * El mosaico es de 40x40 y el gradiente va a 135 grados, asi que cada baldosa
+ * reinicia el gradiente: la costura entre baldosas es parte del dibujo.
+ */
+/*
+ * Fondo "prisma" — PREDETERMINADO.
+ *
+ * Referencia: la portada de Dark Side of the Moon. Lo que la hace funcionar no es
+ * el espectro sino el negro: un campo enorme y vacio, y UN solo evento cromatico
+ * que lo atraviesa. Papel tapiz de neon en cada pixel es el efecto contrario —
+ * cuando todo grita, nada se escucha, y ademas no queda contraste para el texto.
+ *
+ * Tres capas, de arriba hacia abajo:
+ *   1. la banda refractada: el espectro completo, angosto y difuminado en los
+ *      bordes para que se lea como luz y no como una cinta pegada;
+ *   2. un halo frio arriba, que le da profundidad al campo;
+ *   3. el campo casi negro.
+ */
+:root[data-fondo='prisma'] body::before {
+	background:
+		linear-gradient(
+			102deg,
+			transparent calc(50% - var(--prisma-banda) * 2.2),
+			var(--esp-1) calc(50% - var(--prisma-banda) * 1.5),
+			var(--esp-2) calc(50% - var(--prisma-banda) * 0.9),
+			var(--esp-3) calc(50% - var(--prisma-banda) * 0.3),
+			var(--esp-4) calc(50% + var(--prisma-banda) * 0.3),
+			var(--esp-5) calc(50% + var(--prisma-banda) * 0.9),
+			var(--esp-6) calc(50% + var(--prisma-banda) * 1.5),
+			transparent calc(50% + var(--prisma-banda) * 2.2)
+		),
+		radial-gradient(120% 90% at 50% -20%, var(--prisma-campo-alto), transparent 70%),
+		var(--prisma-campo);
+	/*
+	 * La banda va difuminada y atenuada: es luz refractada, no una franja de color.
+	 * Sin el blur el borde duro delata el gradiente y se ve como una bandera.
+	 */
+	filter: blur(calc(30px * var(--fondo-intensidad)));
+	opacity: calc(0.55 * var(--fondo-intensidad) + 0.25);
+	/* Deriva lentisima: en 3 minutos apenas se corre. Se percibe al volver a mirar,
+	   no mientras mirás — que es la unica forma de que un fondo animado no moleste. */
+	animation: prisma-derivar 180s ease-in-out infinite alternate;
+}
+
+@keyframes prisma-derivar {
+	from {
+		transform: translate3d(-3%, 0, 0) rotate(-1.5deg);
+	}
+	to {
+		transform: translate3d(3%, 0, 0) rotate(1.5deg);
+	}
+}
+
+:root:not([data-fondo='puntos']):not([data-fondo='prisma']) body::before {
+	/* Se mezcla contra --fondo segun el dial: al 100% tapaba todo el contraste. */
+	opacity: var(--fondo-intensidad);
+	/* Color de respaldo, por si el gradiente no se pudiera pintar. */
+	background-color: var(--rayas-base);
+	background-image: linear-gradient(
+		135deg,
+		var(--rayas-1) 25%,
+		var(--rayas-2) 25%,
+		var(--rayas-3) 50%,
+		var(--rayas-4) 50%,
+		var(--rayas-5) 75%,
+		var(--rayas-6) 75%,
+		var(--rayas-1)
+	);
+	background-size: var(--rayas-escala) var(--rayas-escala);
+	/*
+	 * El glow del original (un box-shadow de colores) queda descartado. Dos razones:
+	 * apunta hacia afuera y en una capa del tamaño de la ventana cae fuera de la
+	 * pantalla; y llevado a "inset" para que se viera, el hue-rotate de deriva-color
+	 * lo arrastra por toda la rueda y termina como una sombra verde en los costados.
+	 */
+	/*
+	 * Solo el translate, que lo compone la GPU sin repintar. deriva-color
+	 * (hue-rotate sobre la capa entera) se saco: costaba ~13 fps para un ciclo de
+	 * 60s que casi no se percibia.
+	 */
+	animation: rayas-deslizar var(--rayas-velocidad) linear infinite;
+}
+
+/* Sobre las rayas el mesh se atenua a la mitad: ver --psico-mesh-factor. */
+:root:not([data-fondo='puntos']):not([data-fondo='prisma']) {
+	--psico-mesh-factor: 0.5;
+}
+
+/* El prisma vive del vacio: el mesh encima le sacaria justamente eso. */
+:root[data-fondo='prisma'] {
+	--psico-mesh-factor: 0;
+}
+
+/*
+ * Fondo "puntos": patron de puntos entrelazados, Uiverse.io by MikeAndrewDesigner.
+ * Respecto del original cambian los colores y el tamaño (tokens --patron-base /
+ * --patron-acento / --patron-escala) y las dos animaciones. Solo se nota en los
+ * espacios entre tarjetas: el contenido va sobre superficies solidas.
+ */
+:root[data-fondo='puntos'] body::before {
+	opacity: var(--fondo-intensidad);
 	/*
 	 * Unico cambio respecto del original (que usa 99%/101%): la banda de desvanecido
 	 * del circulo oscuro se corre 1% hacia afuera. Motivo: la capa 3 dibuja un punto
@@ -53,7 +205,262 @@ body {
 			calc(0.5 * var(--patron-escala)) 0 / calc(2 * var(--patron-escala)) var(--patron-escala)
 			var(--fondo);
 	/* La X de cada capa queda como la fijó el shorthand: la animación solo pisa la Y. */
+	/*
+	 * Dos animaciones a la vez y con periodos que no son multiplos entre si (30s y
+	 * 60s por defecto): el patron nunca vuelve al mismo estado en el mismo momento,
+	 * asi que no se percibe el loop.
+	 */
+	/* Sin deriva-color: ver la nota en el fondo de rayas. */
 	animation: patron-deslizar 30s linear infinite;
+}
+
+/*
+ * Capa 2 (z-index -1): mesh gradient — tres manchas enormes y difuminadas que
+ * derivan sobre el patron.
+ *
+ * Tres decisiones de rendimiento, porque una capa a pantalla completa con blur y
+ * filtro SVG es lo mas caro de todo el CSS de la app:
+ * 1) Se anima "transform" y no "background-position": transform lo compone la GPU
+ *    sobre la textura ya difuminada; mover el fondo obligaria a re-difuminar en
+ *    cada cuadro.
+ * 2) Por eso mismo la capa mide 160% y esta corrida -30%: al rotar y escalar no
+ *    puede descubrir los bordes de la ventana.
+ * 3) will-change avisa que conviene cachearla como capa propia.
+ * El url(#psico-warp) (definido en index.html) la deforma con ruido animado: es lo
+ * que convierte tres circulos borrosos en algo que parece liquido.
+ */
+body::after {
+	content: '';
+	position: fixed;
+	inset: -30%;
+	width: 160%;
+	height: 160%;
+	z-index: -1;
+	pointer-events: none;
+	background:
+		radial-gradient(35vmax 35vmax at 20% 25%, var(--mesh-1), transparent 65%),
+		radial-gradient(30vmax 30vmax at 78% 68%, var(--mesh-2), transparent 65%),
+		radial-gradient(28vmax 28vmax at 55% 15%, var(--mesh-3), transparent 65%);
+	/* Blur bajado 60 -> 26: sobre gradientes radiales ya suaves, 60px era gasto puro.
+	   Sin url(#psico-warp): el displacement map recalculaba ruido sobre toda la ventana. */
+	filter: blur(26px);
+	mix-blend-mode: var(--psico-mezcla);
+	opacity: calc(var(--psico-mesh-opacidad) * var(--psico) * var(--psico-mesh-factor));
+	/*
+	 * Capa QUIETA. Antes derivaba con transform, pero un layer con mix-blend-mode
+	 * que se mueve se re-mezcla con todo lo de abajo en cada frame. Quieto se
+	 * compone una sola vez. Sin will-change: no hay nada que anticipar.
+	 */
+}
+
+/* ---- Mapa ---- */
+
+/*
+ * El contenedor del mapa necesita una altura explicita: Google dibuja sobre un div
+ * vacio, que sin alto colapsa a 0 y el mapa "no aparece". El vh acotado por
+ * min/max evita que en pantallas muy altas se coma la pagina entera.
+ */
+.mapa,
+.mapa-vacio {
+	height: clamp(320px, 55vh, 620px);
+	border-radius: var(--radio);
+	overflow: hidden;
+}
+
+.mapa-vacio {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: var(--e-2);
+	text-align: center;
+	padding: var(--e-5);
+	background: var(--superficie-2);
+	height: auto;
+	min-height: 200px;
+}
+
+/* ==========================================================================
+   Desbloqueo de bici — la refraccion
+   ==========================================================================
+   El unico momento autoral de movimiento de la app, y esta puesto donde algo
+   irreversible acaba de pasar: la bici se solto y empezo a correr el tiempo.
+   El resto de la interfaz se mantiene quieta justamente para que este se note.
+
+   La idea es que la interfaz se refracte como la luz: la tarjeta se rompe en una
+   grilla de bloques que se separan mientras barren toda la rueda de color, y del
+   centro sale una onda con el espectro. La tarjeta de viaje entra rearmandose con
+   la misma grilla al reves — no es otra animacion, es la misma leida al derecho.
+   ========================================================================== */
+
+/*
+ * El lado del bloque de la grilla. Necesita @property por lo mismo que --angulo:
+ * un custom property comun es texto para el navegador y no interpola.
+ */
+@property --bloque {
+	syntax: '<length>';
+	inherits: false;
+	initial-value: 0px;
+}
+
+/*
+ * La mascara son dos juegos de franjas cruzadas: verticales y horizontales. Al
+ * crecer --bloque, lo que era una superficie continua se abre en una grilla de
+ * cuadrados separados. Es lo que se lee como "los pixeles se reorganizan".
+ */
+.desbloqueo-saliendo,
+.desbloqueo-entrando {
+	mask-image:
+		repeating-linear-gradient(
+			90deg,
+			#000 0 calc(22px - var(--bloque)),
+			transparent calc(22px - var(--bloque)) 22px
+		),
+		repeating-linear-gradient(
+			0deg,
+			#000 0 calc(22px - var(--bloque)),
+			transparent calc(22px - var(--bloque)) 22px
+		);
+	mask-composite: intersect;
+}
+
+.desbloqueo-saliendo {
+	animation: desbloqueo-dispersar 620ms cubic-bezier(0.5, 0, 0.9, 0.4) forwards;
+	pointer-events: none;
+}
+
+/* Entra con salida exponencial: llega rapido y se asienta, que es como frena algo
+   que se rearma y no como se interpola un valor. */
+.desbloqueo-entrando {
+	animation: desbloqueo-rearmar 760ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+@keyframes desbloqueo-dispersar {
+	from {
+		--bloque: 0px;
+		filter: none;
+		transform: none;
+		opacity: 1;
+	}
+	55% {
+		--bloque: 7px;
+		filter: saturate(3) hue-rotate(150deg);
+		transform: scale(1.05);
+		opacity: 0.85;
+	}
+	to {
+		--bloque: 22px;
+		filter: blur(10px) saturate(5) hue-rotate(360deg);
+		transform: scale(1.18);
+		opacity: 0;
+	}
+}
+
+@keyframes desbloqueo-rearmar {
+	from {
+		--bloque: 22px;
+		filter: blur(12px) saturate(5) hue-rotate(-360deg);
+		transform: scale(0.9);
+		opacity: 0;
+	}
+	45% {
+		--bloque: 6px;
+		filter: saturate(2.4) hue-rotate(-90deg);
+		opacity: 1;
+	}
+	to {
+		--bloque: 0px;
+		filter: none;
+		transform: none;
+		opacity: 1;
+	}
+}
+
+/*
+ * La onda. Es un anillo recortado con mascara radial y no un circulo relleno: un
+ * disco de color tapando la pantalla se lee como error, un aro que se expande se
+ * lee como que algo se libero.
+ */
+.desbloqueo-onda {
+	position: fixed;
+	inset: 0;
+	margin: auto;
+	width: 42vmax;
+	height: 42vmax;
+	border-radius: 50%;
+	z-index: 90;
+	pointer-events: none;
+	background: conic-gradient(
+		var(--esp-1),
+		var(--esp-2),
+		var(--esp-3),
+		var(--esp-4),
+		var(--esp-5),
+		var(--esp-6),
+		var(--esp-1)
+	);
+	mask: radial-gradient(closest-side, transparent 60%, #000 68%, #000 82%, transparent 88%);
+	filter: blur(4px);
+	opacity: calc(0.9 * var(--psico));
+	animation: desbloqueo-onda 700ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes desbloqueo-onda {
+	from {
+		transform: scale(0.15) rotate(0deg);
+		opacity: calc(0.9 * var(--psico));
+	}
+	to {
+		transform: scale(2.8) rotate(140deg);
+		opacity: 0;
+	}
+}
+
+/*
+ * Movimiento reducido: no hay dispersion ni onda. El cambio sigue ocurriendo y se
+ * anuncia por texto (aria-live), que es lo que de verdad comunica el resultado.
+ */
+@media (prefers-reduced-motion: reduce) {
+	.desbloqueo-saliendo,
+	.desbloqueo-entrando {
+		animation: none;
+		mask-image: none;
+	}
+
+	.desbloqueo-onda {
+		display: none;
+	}
+}
+
+/* ---- Panel de cambio de estilo ---- */
+
+/*
+ * Fijo abajo a la derecha, por encima del contenido pero por debajo de la nav
+ * pegajosa (z-index 50) para no taparla al scrollear.
+ */
+.estilo-toggle {
+	position: fixed;
+	right: var(--e-4);
+	bottom: var(--e-4);
+	z-index: 40;
+	display: flex;
+	gap: var(--e-2);
+}
+
+.estilo-toggle button {
+	border-radius: var(--radio-pill);
+	padding: var(--e-2) var(--e-4);
+	min-height: var(--target-min);
+	font-size: var(--txt-micro);
+	box-shadow: var(--elev-3);
+}
+
+/* El <svg> de index.html solo aporta el <defs>: no tiene que ocupar lugar. */
+.psico-filtros {
+	position: absolute;
+	width: 0;
+	height: 0;
+	pointer-events: none;
 }
 
 /*
@@ -66,21 +473,88 @@ body {
  */
 @keyframes patron-deslizar {
 	from {
-		background-position-y: var(--patron-escala), 0px, 0px, 0px;
+		transform: translate3d(0, 0, 0);
 	}
 	to {
-		background-position-y:
-			calc(var(--patron-escala) + 2 * var(--patron-escala)),
-			calc(2 * var(--patron-escala)),
-			calc(2 * var(--patron-escala)),
-			calc(2 * var(--patron-escala));
+		transform: translate3d(0, calc(2 * var(--patron-escala)), 0);
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
-	body {
-		animation: none;
+/* Desplazamiento de las rayas: exactamente una baldosa en x y en y, con lo cual
+   al terminar el ciclo el dibujo esta en la misma posicion que al empezar. */
+@keyframes rayas-deslizar {
+	from {
+		transform: translate3d(0, 0, 0);
 	}
+	to {
+		transform: translate3d(var(--rayas-escala), var(--rayas-escala), 0);
+	}
+}
+
+/*
+ * Angulo del borde conico de las tarjetas. Necesita @property: un custom property
+ * comun es solo texto para el navegador y salta de 0 a 360 sin interpolar; al
+ * declararlo como <angle> pasa a ser animable de verdad.
+ */
+@property --angulo {
+	syntax: '<angle>';
+	inherits: false;
+	initial-value: 0deg;
+}
+
+@keyframes girar-angulo {
+	to {
+		--angulo: 360deg;
+	}
+}
+
+/* Corrimiento del gradiente de los titulos. El gradiente mide 300% del ancho y se
+   desplaza 2/3: por eso el color entra por un lado y sale por el otro sin cortes. */
+@keyframes desplazar-gradiente {
+	to {
+		background-position: 200% 50%;
+	}
+}
+
+/* Latido del punto del logo. */
+@keyframes pulso-psico {
+	0%,
+	100% {
+		box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7);
+	}
+	70% {
+		box-shadow: 0 0 0 10px rgba(168, 85, 247, 0);
+	}
+}
+
+/*
+ * Movimiento reducido: se apaga TODO lo psicodelico animado, incluido el filtro
+ * SVG del mesh (se deja solo el blur, sin url(#psico-warp): si no se referencia,
+ * el navegador ni siquiera evalua la turbulencia). El diseño no se cae, queda
+ * estatico. Esto no es opcional: hue-rotate continuo a pantalla completa puede
+ * marear o disparar migraña.
+ */
+@media (prefers-reduced-motion: reduce) {
+	body::before,
+	body::after,
+	.tarjeta,
+	.tarjeta::before,
+	.encabezado-pagina::before,
+	.encabezado-pagina,
+	.marca-punto,
+	.nav-rail-indicador,
+	.nav-admin,
+	.admin-sidebar a.active,
+	h1 {
+		animation: none !important;
+	}
+
+	/* El indicador se reposiciona de golpe: sigue diciendo donde estas, sin viaje. */
+	.nav-rail-indicador {
+		transition: none !important;
+	}
+
+	/* El mesh ya es estatico y sin filtro SVG; nada que apagar aca. */
 }
 
 h1,
@@ -91,11 +565,44 @@ h3 {
 	text-wrap: balance;
 }
 
+/*
+ * h1 con gradiente animado. El truco es background-clip: text — el fondo se recorta
+ * a la silueta de las letras — mas color: transparent para que el texto no lo tape.
+ *
+ * Dos cuidados que hacen que esto sea usable y no solo lindo:
+ * - Los colores salen de --titulo-a/b/c, que cambian por tema justamente para que
+ *   el titulo siga contrastando; en claro son las versiones oscuras.
+ * - Va "color" antes del clip: si el navegador no soportara background-clip: text,
+ *   el fallback es texto solido legible, no texto invisible.
+ */
 h1 {
+	font-family: var(--fuente-display);
 	font-size: var(--txt-h1);
-	font-weight: 700;
-	letter-spacing: -0.02em;
+	font-weight: 400;
+	letter-spacing: 0;
 	margin: 0 0 var(--e-5);
+	color: var(--titulo-a);
+	background: linear-gradient(
+		100deg,
+		var(--titulo-a),
+		var(--titulo-b),
+		var(--titulo-c),
+		var(--titulo-a)
+	);
+	/* 300% de ancho para tener recorrido que desplazar; el texto solo ve un tercio. */
+	background-size: 300% 100%;
+	background-position: 0% 50%;
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	animation: desplazar-gradiente 14s linear infinite;
+}
+
+@supports not ((background-clip: text) or (-webkit-background-clip: text)) {
+	h1 {
+		background: none;
+		-webkit-text-fill-color: currentColor;
+	}
 }
 
 h2 {
@@ -118,6 +625,55 @@ p {
 a {
 	color: var(--acento);
 	text-underline-offset: 3px;
+}
+
+/* ==========================================================================
+   Superficies del navegador
+   ==========================================================================
+   Seleccion, cursor de texto y barras de scroll las dibuja el navegador con sus
+   propios colores, que no pertenecen a ningun sistema de diseno. Sin tematizarlas
+   quedan islas grises en una app saturada, y es lo que delata que una pantalla fue
+   ensamblada y no disenada.
+   ========================================================================== */
+
+::selection {
+	background: var(--marca-500);
+	color: var(--blanco);
+}
+
+/* El cursor de texto en el acento: el detalle mas chico de la app y el que mas se
+   mira, porque parpadea justo donde esta la atencion. */
+input,
+textarea {
+	caret-color: var(--decorativo);
+}
+
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--marca-500) transparent;
+}
+
+/* WebKit no lee scrollbar-color: necesita sus pseudo-elementos aparte. */
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--marca-500);
+	border-radius: var(--radio-pill);
+	/* El borde transparente actua de padding: el pulgar no toca los bordes del riel. */
+	border: 2px solid transparent;
+	background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: var(--marca-600);
+	background-clip: content-box;
 }
 
 /* Foco visible unico para todo lo enfocable. Nunca se remueve sin reemplazo. */
@@ -167,17 +723,29 @@ button {
 	font-weight: 600;
 	cursor: pointer;
 	border: 1px solid transparent;
-	border-radius: var(--radio-chico);
+	border-radius: var(--forma-control);
 	background: var(--acento);
 	color: var(--texto-sobre-acento);
 	padding: var(--e-3) var(--e-5);
 	min-height: var(--target-min);
 	white-space: nowrap;
-	transition: background var(--transicion), border-color var(--transicion);
+	transition:
+		background var(--transicion),
+		border-color var(--transicion),
+		filter var(--transicion),
+		box-shadow var(--transicion);
 }
 
+/*
+ * Hover: el boton salta de familia de color en vez de solo aclararse. hue-rotate
+ * gira el tono de TODO el boton (fondo y texto a la vez), asi que el contraste
+ * entre ambos se mantiene exactamente igual — por eso es seguro usarlo aca y no,
+ * por ejemplo, cambiar solo el color de fondo a mano.
+ */
 button:hover:not(:disabled) {
 	background: var(--acento-hover);
+	filter: hue-rotate(calc(70deg * var(--psico)));
+	box-shadow: 0 0 calc(20px * var(--psico)) rgba(168, 85, 247, 0.55);
 }
 
 button:disabled {
@@ -228,16 +796,41 @@ textarea {
 	padding: var(--e-3);
 	min-height: var(--target-min);
 	border: 1px solid var(--borde-fuerte);
-	border-radius: var(--radio-chico);
+	border-radius: var(--forma-control);
 	background: var(--superficie);
 	color: var(--texto);
 	transition: border-color var(--transicion), box-shadow var(--transicion);
 }
 
 input:hover:not(:disabled),
-select:hover:not(:disabled) {
+select:hover:not(:disabled),
+textarea:hover:not(:disabled) {
 	border-color: var(--decorativo);
 }
+
+/*
+ * El placeholder es texto y tiene que cumplir contraste como cualquier otro. El
+ * gris por defecto del navegador ronda 2:1 y ademas cambia entre navegadores, asi
+ * que se fija a --texto-suave, que tiene ratio garantizado en los dos temas.
+ * Nunca opacity: atenuar con opacidad rompe el ratio de forma invisible.
+ */
+::placeholder {
+	color: var(--texto-suave);
+	opacity: 1;
+}
+
+/*
+ * Foco de los campos: el anillo global ya dice donde estas; esto le suma el halo
+ * de la marca. Va por dentro (inset) para no correr el layout, y multiplicado por
+ * --psico para que el control maestro tambien lo alcance.
+ */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+	border-color: var(--decorativo);
+	box-shadow: inset 0 0 calc(14px * var(--psico)) rgba(168, 85, 247, calc(0.35 * var(--psico)));
+}
+
 
 input[aria-invalid='true'],
 select[aria-invalid='true'] {
@@ -262,13 +855,25 @@ label {
 	text-align: left;
 }
 
+/*
+ * En .campo el <label> envuelve SOLO el texto (el input es hermano), a diferencia
+ * del label base que envuelve todo su control en columna. Sin resetear el flex,
+ * el asterisco de "requerido" — que es un <span> dentro del label — bajaba a su
+ * propia linea, separado de la palabra.
+ */
 .campo label {
+	display: block;
 	font-size: var(--txt-chico);
 	font-weight: 600;
 }
 
+/* El asterisco NO es el unico indicador de obligatorio: cada campo obligatorio
+   ademas rechaza el submit con su mensaje. El color aca es refuerzo, no la senal. */
 .campo-requerido {
 	color: var(--error-texto);
+	font-weight: 700;
+	/* Se despega apenas de la palabra sin que el navegador lo pueda cortar a otra linea. */
+	margin-left: 0.15em;
 }
 
 .campo-ayuda {
@@ -337,46 +942,203 @@ label {
 	z-index: 50;
 }
 
-.nav a {
+/* ---- Rail de pestañas ----------------------------------------------------
+ *
+ * Las cinco pestañas del cliente van juntas en un track hundido en vez de
+ * sueltas en la barra. Dos cosas cambian con eso: dejan de competir con la
+ * marca y el cluster de sesion (que ahora se leen como otra cosa, no como mas
+ * links), y el indicador tiene un contenedor contra el cual posicionarse.
+ */
+.nav-rail {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	padding: var(--e-1);
+	border-radius: var(--radio-pill);
+	background: var(--fondo);
+	border: 1px solid var(--borde);
+	/* Acota el glow del indicador al rail en vez de dejarlo sangrar en la nav. */
+	isolation: isolate;
+	/*
+	 * Se encoge y scrollea a cualquier ancho, no solo en mobile: a 1044px el rail
+	 * a su ancho natural empujaba el nombre de usuario y el boton Salir fuera de la
+	 * ventana. min-width: 0 es lo que permite que un item flex baje de su ancho de
+	 * contenido; sin eso overflow-x no tiene nada que recortar.
+	 */
+	min-width: 0;
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+
+.nav-rail::-webkit-scrollbar {
+	display: none;
+}
+
+.nav-rail a {
+	position: relative;
+	/* Por encima del indicador, que es hermano y va sin z-index. */
+	z-index: 1;
 	display: flex;
 	align-items: center;
 	min-height: var(--target-min);
-	padding: 0 var(--e-3);
-	border-radius: var(--radio-chico);
+	padding: 0 var(--e-4);
+	border-radius: var(--radio-pill);
 	color: var(--texto);
 	text-decoration: none;
 	font-size: var(--txt-chico);
 	font-weight: 500;
-	transition: background var(--transicion), color var(--transicion);
+	white-space: nowrap;
+	transition: color var(--transicion), background var(--transicion);
 }
 
-.nav a:hover {
-	background: var(--superficie-2);
-}
-
-.nav a.active {
+/*
+ * El hover se pinta solo en las inactivas: sobre la activa taparia el indicador,
+ * que es justamente lo que estamos senalando.
+ */
+.nav-rail a:not(.active):hover {
+	background: var(--superficie-hover);
 	color: var(--acento);
-	font-weight: 700;
-	background: var(--acento-suave);
 }
 
+.nav-rail a.active {
+	color: var(--acento);
+}
+
+/*
+ * El indicador es UNA pieza que viaja entre pestañas, no un fondo que aparece
+ * y desaparece en cada una: al moverse muestra la relacion entre la pestaña que
+ * dejaste y la que abriste. Es el unico momento de movimiento autoral de la
+ * barra — todo lo demas de la nav esta quieto.
+ *
+ * El relleno es plano y el arcoiris vive solo en el aro. No es una decision
+ * estetica: el label de la pestaña activa va encima, y sobre una conica
+ * saturada no hay contraste posible. Misma tecnica de doble background que
+ * .tarjeta — color hasta padding-box, gradiente hasta border-box.
+ *
+ * El ancho y la posicion los mide Nav.tsx en el DOM y llegan como --w y --x.
+ */
+.nav-rail-indicador {
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	width: var(--w);
+	transform: translateX(var(--x));
+	border: 1.5px solid transparent;
+	border-radius: var(--radio-pill);
+	background:
+		linear-gradient(var(--acento-suave), var(--acento-suave)) padding-box,
+		conic-gradient(
+				from var(--angulo),
+				var(--marca-500),
+				var(--acido-cian),
+				var(--acido-lima),
+				var(--acido-magenta),
+				var(--marca-500)
+			)
+			border-box;
+	box-shadow: 0 0 calc(16px * var(--psico)) rgba(168, 85, 247, calc(0.45 * var(--psico)));
+	animation: girar-angulo 6s linear infinite;
+	pointer-events: none;
+	/* Salida exponencial: arranca rapido y frena largo, que es como se lee un
+	   objeto que se desliza y no un valor que se interpola. */
+	transition:
+		transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+		width 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/*
+ * Admin es un chip contorneado y no una pestaña mas: cambiar de rol no es un
+ * paso del mismo recorrido. El aro cian lo separa del rail sin gritar, y por
+ * eso vive del lado de la sesion.
+ */
+.nav-admin {
+	display: flex;
+	align-items: center;
+	min-height: var(--target-min);
+	padding: 0 var(--e-4);
+	border: 1.5px solid transparent;
+	border-radius: var(--radio-pill);
+	background:
+		linear-gradient(var(--superficie), var(--superficie)) padding-box,
+		conic-gradient(
+				from var(--angulo),
+				var(--acido-cian),
+				var(--marca-500),
+				var(--acido-magenta),
+				var(--acido-cian)
+			)
+			border-box;
+	color: var(--acento);
+	text-decoration: none;
+	font-size: var(--txt-micro);
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	flex-shrink: 0;
+	animation: girar-angulo 9s linear infinite;
+	transition: box-shadow var(--transicion);
+}
+
+.nav-admin:hover,
+.nav-admin.active {
+	box-shadow: 0 0 calc(14px * var(--psico)) rgba(34, 211, 238, calc(0.55 * var(--psico)));
+}
+
+.nav-admin.active {
+	background:
+		linear-gradient(var(--acento-suave), var(--acento-suave)) padding-box,
+		conic-gradient(
+				from var(--angulo),
+				var(--acido-cian),
+				var(--marca-500),
+				var(--acido-magenta),
+				var(--acido-cian)
+			)
+			border-box;
+}
+
+/*
+ * Aberracion cromatica en el logo: dos copias del texto desplazadas 1px, una cian
+ * y otra magenta, imitando un canal RGB mal alineado. Va con text-shadow y no con
+ * gradiente porque aca el texto tiene que quedar solido y opaco — es el elemento
+ * de identidad, y ademas convive con el fondo animado a traves de la nav.
+ * 1px y no mas: pasado eso deja de leerse como impresion y se lee como error.
+ */
 .marca {
 	display: flex;
 	align-items: center;
 	gap: var(--e-2);
-	font-weight: 700;
-	font-size: 1.125rem;
-	letter-spacing: -0.02em;
+	font-family: var(--fuente-display);
+	font-weight: 400;
+	font-size: 1.25rem;
+	letter-spacing: 0.01em;
 	color: var(--texto-fuerte);
 	margin-right: var(--e-4);
+	text-shadow:
+		calc(1px * var(--psico)) 0 0 var(--acido-cian),
+		calc(-1px * var(--psico)) 0 0 var(--acido-magenta);
 }
 
+/* El punto del logo: rueda de color entera girando, con un latido alrededor. */
 .marca-punto {
 	width: 12px;
 	height: 12px;
 	border-radius: var(--radio-pill);
-	background: var(--decorativo);
+	background: conic-gradient(
+		from var(--angulo),
+		var(--marca-500),
+		var(--acido-cian),
+		var(--acido-lima),
+		var(--acido-magenta),
+		var(--marca-500)
+	);
 	flex-shrink: 0;
+	animation:
+		girar-angulo 6s linear infinite,
+		pulso-psico 3s ease-out infinite;
 }
 
 .nav-usuario {
@@ -483,6 +1245,16 @@ label {
 	.usuarios-activos-texto {
 		white-space: nowrap;
 	}
+
+	/*
+	 * El panel de estilo es fijo abajo a la derecha y tapaba el ultimo campo de
+	 * los formularios largos. Se le reserva su alto al final de la pagina para que
+	 * el contenido siempre pueda scrollear por debajo.
+	 */
+	.contenido,
+	.pantalla-centrada {
+		padding-bottom: calc(var(--e-8) + var(--target-min));
+	}
 }
 
 .centrado {
@@ -503,16 +1275,220 @@ label {
 	align-items: start;
 }
 
+/* Ocupa todas las columnas, sean las que sean: "-1" es la ultima linea de la
+   grilla, asi que la regla sirve igual con dos columnas que con una. */
+.grilla > .seccion-ancha {
+	grid-column: 1 / -1;
+}
+
 /* ==========================================================================
    Tarjetas
    ========================================================================== */
 
+/*
+ * Borde conico giratorio. Se hace con dos capas de fondo y NO con un pseudo-elemento
+ * detras, que es el truco habitual: un ::before con z-index negativo quedaria tapado
+ * por el fondo de la propia tarjeta (el fondo del elemento se pinta despues de sus
+ * hijos negativos) y ademas competiria por orden con las capas fijas del fondo.
+ *
+ * Como funciona: el borde es transparente, y las dos capas se recortan distinto —
+ * el color plano hasta el padding-box (o sea, sin llegar al borde) y el gradiente
+ * hasta el border-box. El gradiente solo asoma en la franja del borde.
+ *
+ * padding compensado en 2px para que el contenido no se corra al aparecer el borde.
+ */
 .tarjeta {
-	background: var(--superficie);
-	border-radius: var(--radio-grande);
-	padding: var(--e-5);
-	/* Sin borde: en neumorfismo el borde duro compite con la sombra suave y arruina el efecto. */
+	border: 2px solid transparent;
+	border-radius: var(--forma-tarjeta);
+	padding: calc(var(--e-5) - 2px);
+	background:
+		linear-gradient(var(--superficie), var(--superficie)) padding-box,
+		conic-gradient(
+				from var(--angulo),
+				var(--marca-500),
+				var(--acido-cian),
+				var(--acido-lima),
+				var(--acido-magenta),
+				var(--marca-500)
+			)
+			border-box;
 	box-shadow: var(--elev-tarjeta);
+	/*
+	 * Borde conico FIJO. Girarlo (animar --angulo regenera un conic-gradient por
+	 * frame) costaba ~13 fps con UNA tarjeta; en Admin con seis era el mayor gasto
+	 * de la app. El arcoiris queda igual de vistoso quieto.
+	 */
+}
+
+/* ==========================================================================
+   Tarjetas modo "ticket" (Uiverse.io by dexter-st)
+   ==========================================================================
+   Se activa con data-tarjeta="ticket" en el <html> (ver lib/estilo.ts).
+
+   La adaptacion mas importante: el original troquela un <div class="bg"> aparte
+   porque una mask aplicada al elemento recorta TAMBIEN su contenido — el texto
+   quedaria mordido en los bordes. Aca no se puede agregar ese div (.tarjeta la
+   usan una docena de componentes), asi que la mascara vive en ::before y ::after
+   y el contenido real queda por encima, intacto.
+
+   Para que los dos pseudo-elementos queden DEBAJO del texto van con z-index -1:
+   en el orden de pintado, un posicionado con z-index automatico se dibuja por
+   encima del contenido en linea, no por debajo. El isolation: isolate encierra
+   ese -1 dentro de la tarjeta para que no se escape al fondo de la pagina.
+   ========================================================================== */
+
+:root[data-tarjeta='ticket'] .tarjeta,
+:root[data-tarjeta='ticket'] .encabezado-pagina {
+	--perforacion: 12px;
+	/* A que altura caen las muescas laterales y la linea de corte. Medido desde
+	   arriba, para que la "colilla" quede a la altura del titulo de la tarjeta. */
+	--corte: 70px;
+
+	position: relative;
+	isolation: isolate;
+	border: none;
+	background: none;
+	box-shadow: none;
+	/* El padding vertical deja lugar para el troquelado de arriba y abajo. */
+	padding: calc(var(--e-5) + var(--perforacion)) var(--e-5);
+	/*
+	 * drop-shadow y no box-shadow: box-shadow dibuja la sombra del rectangulo,
+	 * ignorando la mascara, y se veria un rectangulo perfecto flotando detras de
+	 * un papel troquelado. drop-shadow sigue la silueta real.
+	 */
+	background: none;
+	/*
+	 * UNA sola drop-shadow (antes cuatro apiladas = ~20 pases de blur por frame
+	 * con varias tarjetas). Sigue la silueta troquelada, no el rectangulo.
+	 */
+	filter: drop-shadow(0 8px 12px #0000003d);
+	animation: flotar-ticket var(--ticket-pulso) ease infinite;
+}
+
+/* Con varias tarjetas en pantalla, todas subiendo y bajando a la vez marea. Los
+   delays negativos las desfasan sin retrasar el arranque. */
+:root[data-tarjeta='ticket'] .tarjeta:nth-of-type(2n) {
+	animation-delay: calc(-1 * var(--ticket-pulso) / 3);
+}
+
+:root[data-tarjeta='ticket'] .tarjeta:nth-of-type(3n) {
+	animation-delay: calc(-2 * var(--ticket-pulso) / 3);
+}
+
+/*
+ * El troquelado. Cinco capas de mascara: perforaciones arriba, perforaciones
+ * abajo, muesca izquierda, muesca derecha y la linea de corte punteada.
+ * mask-composite dice como se combina cada capa con el acumulado: "exclude" es
+ * lo que agujerea (resta), "add" suma, "intersect" recorta contra lo anterior.
+ * Va tal cual el original salvo los valores, que pasan a variables.
+ */
+:root[data-tarjeta='ticket'] .tarjeta::before,
+:root[data-tarjeta='ticket'] .tarjeta::after,
+:root[data-tarjeta='ticket'] .encabezado-pagina::before,
+:root[data-tarjeta='ticket'] .encabezado-pagina::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	border-radius: inherit;
+	pointer-events: none;
+	/*
+	 * Troquelado en 3 capas (antes 5): perforaciones arriba y abajo, y las dos
+	 * muescas laterales en una sola capa con dos radiales. La linea de corte
+	 * punteada se saco — era un repeating-linear-gradient a lo ancho de la tarjeta,
+	 * la capa mas cara de rasterizar y la menos distintiva.
+	 */
+	mask:
+		radial-gradient(circle at 50% 0, #fff0 calc(var(--perforacion) - 5px), #000 calc(var(--perforacion) - 4px)),
+		radial-gradient(circle at 50% 100%, #fff0 calc(var(--perforacion) - 5px), #000 calc(var(--perforacion) - 4px)),
+		radial-gradient(circle 8px at left var(--corte), #0000 8px, #000 9px),
+		radial-gradient(circle 8px at right var(--corte), #0000 8px, #000 9px);
+	mask-repeat: repeat-x, repeat-x, no-repeat, no-repeat;
+	mask-size:
+		calc(var(--perforacion) * 2) 100%,
+		calc(var(--perforacion) * 2) 100%,
+		100% 100%,
+		100% 100%;
+	mask-position:
+		calc(0.5 * var(--perforacion)) top,
+		calc(0.5 * var(--perforacion)) bottom,
+		0 0,
+		0 0;
+	mask-composite: intersect, exclude, exclude;
+}
+
+/*
+ * Capa holografica. El original la arma con tres elementos superpuestos y
+ * mix-blend-mode; aca son cinco capas de background en un solo pseudo-elemento,
+ * combinadas con background-blend-mode — que hace exactamente lo mismo pero entre
+ * capas de un mismo elemento, sin necesidad de tres divs.
+ * El orden es el de CSS: la primera capa es la de arriba.
+ */
+:root[data-tarjeta='ticket'] .tarjeta::before,
+:root[data-tarjeta='ticket'] .encabezado-pagina::before {
+	/*
+	 * Tornasol: un destello diagonal sobre una rueda conica, mezclados con
+	 * 'overlay'. Antes eran 5 capas + background-blend-mode + filter SVG + una
+	 * animacion de background-position (repintado por frame). Quieto y con 2
+	 * capas se ve igual de holografico y no cuesta nada por frame.
+	 */
+	background-image:
+		linear-gradient(115deg, #0000 20%, #ffffff 46%, #0000 64%),
+		conic-gradient(from 210deg at 55% 45%, #7de3ff, #ff6bfe, #eef0bc, #0081fd, #01fefb, #7de3ff);
+	background-blend-mode: overlay;
+}
+
+/*
+ * Velo de lectura: superficie casi opaca sobre el tornasol. Lo justo para que
+ * el texto tenga contraste parejo y el tornasol se insinue en los bordes
+ * troquelados. Es un color plano — barato de pintar. Lleva la misma mascara.
+ */
+:root[data-tarjeta='ticket'] .tarjeta::after,
+:root[data-tarjeta='ticket'] .encabezado-pagina::after {
+	background: color-mix(in srgb, var(--superficie) var(--ticket-velo), transparent);
+}
+
+/* Flotacion. La sombra se afloja mientras sube: es lo que hace leer el movimiento
+   como despegue y no como un simple desplazamiento. */
+@keyframes flotar-ticket {
+	50% {
+		transform: translateY(-7px) scale(1.02);
+	}
+}
+
+/*
+ * Tarjeta dentro de tarjeta. Pasa cuando un componente que ya trae su propia
+ * .tarjeta (la comparativa de planes) se usa dentro de una seccion que tambien
+ * lo es. El marco doble se ve mal y, peor, el padding se paga dos veces: son
+ * ~48px menos de ancho util justo donde hay una tabla que no entra.
+ *
+ * La anidada conserva su contenido pero pierde superficie, borde, sombra,
+ * padding y — en modo ticket — el troquelado y la flotacion: un ticket que
+ * flota adentro de otro ticket que flota es mareante.
+ */
+.tarjeta .tarjeta,
+:root[data-tarjeta='ticket'] .tarjeta .tarjeta {
+	background: none;
+	border: none;
+	box-shadow: none;
+	padding: 0;
+	animation: none;
+	filter: none;
+}
+
+:root[data-tarjeta='ticket'] .tarjeta .tarjeta::before,
+:root[data-tarjeta='ticket'] .tarjeta .tarjeta::after {
+	content: none;
+}
+
+/*
+ * En una grilla la misma forma repetida se vuelve un patron de wallpaper. Espejar
+ * una de cada dos hace que el contorno diagonal se lea como ritmo — dos gotas
+ * enfrentadas — en vez de como un molde estampado.
+ */
+.grilla > .tarjeta:nth-child(even),
+.lista-estaciones > .tarjeta:nth-child(even) {
+	border-radius: var(--forma-tarjeta-alt);
 }
 
 .tarjeta-encabezado {
@@ -556,7 +1532,7 @@ label {
 	align-items: flex-start;
 	gap: var(--e-2);
 	padding: var(--e-3) var(--e-4);
-	border-radius: var(--radio);
+	border-radius: var(--forma-control);
 	font-size: var(--txt-chico);
 	margin-bottom: var(--e-4);
 	border-left: 4px solid currentColor;
@@ -638,6 +1614,21 @@ label {
 .tabla-vacia {
 	color: var(--texto-suave);
 	font-style: italic;
+}
+
+/* La barra de acciones del mapa reusaba .fila (align-items: flex-end, pensado
+   para formularios), y el texto de estado quedaba pegado al borde inferior del
+   boton. Aca boton y texto van centrados entre si. */
+.mapa-barra {
+	display: flex;
+	align-items: center;
+	gap: var(--e-3);
+	flex-wrap: wrap;
+	margin: var(--e-4) 0;
+}
+
+.mapa-barra .ayuda {
+	margin: 0;
 }
 
 /* ==========================================================================
@@ -820,19 +1811,164 @@ label {
 	color: var(--texto-fuerte);
 }
 
-.contador {
+/* ---- Viaje en curso ---- */
+
+.viaje-encabezado {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--e-3);
+	margin-bottom: var(--e-4);
+}
+
+.viaje-encabezado h2 {
+	margin: 0;
+}
+
+/* El codigo de la bici es un dato para leer y comparar contra el caño, no prosa:
+   va en monoespaciada y con numeros de ancho fijo. */
+.viaje-bici {
 	font-family: var(--fuente-mono);
 	font-variant-numeric: tabular-nums;
-	font-size: var(--txt-contador);
+	font-size: var(--txt-chico);
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	padding: var(--e-1) var(--e-3);
+	border-radius: var(--radio-pill);
+	background: var(--acento-suave);
+	color: var(--acento);
+	white-space: nowrap;
+}
+
+/*
+ * El anillo del tiempo.
+ *
+ * El arco pintado es el tiempo YA gastado, y al avanzar barre el espectro entero:
+ * el color en si no informa nada (el dato esta en numeros adentro y en texto
+ * abajo), pero la proporcion se lee de un vistazo con una mano en el manubrio.
+ *
+ * Es un anillo y no un disco porque el centro tiene que quedar libre para el
+ * numero, que es lo que de verdad se mira. La mascara radial recorta el agujero.
+ */
+/*
+ * El anillo del tiempo.
+ *
+ * El arco pintado es el tiempo YA gastado, y el espectro entero se comprime dentro
+ * de ese arco: al principio es una viruta roja y al llegar al limite se completo
+ * la rueda de color. El color no informa nada por si mismo — el dato esta en el
+ * numero del centro y en el texto de abajo (WCAG 1.4.1) — pero la proporcion se
+ * lee de un vistazo con una mano en el manubrio.
+ *
+ * El gradiente y su mascara viven en ::before y no en el elemento: una mask
+ * recorta TAMBIEN el contenido, y el numero del centro desaparecia.
+ */
+.viaje-anillo {
+	--tam: clamp(180px, 48vw, 230px);
+	position: relative;
+	width: var(--tam);
+	height: var(--tam);
+	margin: var(--e-4) auto;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.viaje-anillo::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: 50%;
+	/* Cada parada va a una fraccion del arco consumido: por eso el espectro se
+	   estira a medida que pasa el tiempo en vez de estar siempre completo. */
+	background: conic-gradient(
+		from -90deg,
+		var(--esp-1) 0deg,
+		var(--esp-2) calc(var(--progreso) * 72deg),
+		var(--esp-3) calc(var(--progreso) * 144deg),
+		var(--esp-4) calc(var(--progreso) * 216deg),
+		var(--esp-5) calc(var(--progreso) * 288deg),
+		var(--esp-6) calc(var(--progreso) * 360deg),
+		var(--superficie-2) calc(var(--progreso) * 360deg),
+		var(--superficie-2) 360deg
+	);
+	mask: radial-gradient(closest-side, transparent 71%, #000 73%);
+}
+
+/* Excedido: el anillo deja el espectro y pasa entero al color de alerta. El dato
+   igual lo dan el numero, el rotulo "de más" y el aviso con role=alert. */
+.viaje-anillo-excedido::before {
+	background: conic-gradient(from -90deg, var(--error-texto) 0deg, var(--error-texto) 360deg);
+	animation: viaje-latir 2s ease-in-out infinite;
+}
+
+@keyframes viaje-latir {
+	50% {
+		filter: brightness(1.35);
+	}
+}
+
+.viaje-anillo-centro {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: var(--e-1);
+}
+
+.viaje-tiempo {
+	font-family: var(--fuente-mono);
+	font-variant-numeric: tabular-nums;
+	/*
+	 * Atado al diametro del anillo y no a --txt-contador: el hueco mide 71% del
+	 * ancho, o sea ~0.71 * --tam, y "25:58" son cinco caracteres monoespaciados.
+	 * Con un tamaño fijo el numero desbordaba el aro en las pantallas chicas.
+	 */
+	font-size: calc(var(--tam) * 0.2);
 	font-weight: 700;
 	line-height: 1;
 	letter-spacing: -0.03em;
 	color: var(--texto-fuerte);
-	margin: var(--e-4) 0;
 }
 
-.contador-excedido {
+.viaje-anillo-excedido .viaje-tiempo {
 	color: var(--error-texto);
+}
+
+.viaje-rotulo {
+	font-size: var(--txt-micro);
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--texto-suave);
+}
+
+.viaje-pie {
+	margin-bottom: var(--e-5);
+}
+
+/* Devolver es un segundo paso, no lo primero: separado por una linea y con su
+   propio titulo, para que mientras pedaleas la pantalla sea el tiempo. */
+.viaje-devolucion {
+	margin-top: var(--e-5);
+	padding-top: var(--e-5);
+	border-top: 1px solid var(--borde);
+	text-align: left;
+}
+
+.viaje-devolucion h3 {
+	margin-bottom: var(--e-3);
+}
+
+.viaje-devolucion button {
+	width: 100%;
+	margin-top: var(--e-4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.viaje-anillo-excedido::before {
+		animation: none;
+	}
 }
 
 /* En modo bici los targets son grandes: se usa en la calle, con una mano. */
@@ -955,10 +2091,23 @@ label {
 .encabezado-pagina {
 	margin-bottom: var(--e-6);
 	max-width: 62ch;
-	background: var(--superficie);
-	border-radius: var(--radio-grande);
-	padding: var(--e-5) var(--e-6);
+	border: 2px solid transparent;
+	border-radius: var(--forma-panel);
+	padding: calc(var(--e-5) - 2px) calc(var(--e-6) - 2px);
+	/* Mismo borde conico que .tarjeta; ver ahi el porque de las dos capas. */
+	background:
+		linear-gradient(var(--superficie), var(--superficie)) padding-box,
+		conic-gradient(
+				from var(--angulo),
+				var(--marca-500),
+				var(--acido-cian),
+				var(--acido-lima),
+				var(--acido-magenta),
+				var(--marca-500)
+			)
+			border-box;
 	box-shadow: var(--elev-tarjeta);
+	/* Borde conico fijo, igual que .tarjeta. */
 }
 
 .encabezado-pagina h1 {
@@ -1007,10 +2156,40 @@ label {
 	margin-bottom: var(--e-5);
 }
 
+/*
+ * Superficie propia. Los titulos de grupo y las secciones inactivas caian
+ * directamente sobre el fondo decorativo y eran ilegibles: es la misma regla que
+ * ya cumplen .encabezado-pagina y .centrado — nada de texto sin superficie solida
+ * debajo. Era el defecto mas grave de la pantalla de admin.
+ */
 .admin-sidebar {
 	grid-area: sidebar;
 	position: sticky;
 	top: calc(var(--alto-nav) + var(--e-4));
+	padding: var(--e-4) var(--e-3);
+	background: var(--superficie);
+	border: 1px solid var(--borde);
+	border-radius: var(--forma-panel);
+	box-shadow: var(--elev-2);
+}
+
+/*
+ * Un bloque por grupo. La separacion entre grupos es mas grande que la que hay
+ * entre sus items, y el titulo respira mas arriba que abajo: eso solo ya hace
+ * que las seis secciones se lean como tres cosas y no como una lista larga.
+ */
+.admin-sidebar-grupo + .admin-sidebar-grupo {
+	margin-top: var(--e-5);
+}
+
+.admin-sidebar-titulo {
+	margin: 0 0 var(--e-2);
+	padding-left: var(--e-4);
+	font-size: var(--txt-micro);
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--texto-suave);
 }
 
 .admin-sidebar ul {
@@ -1022,25 +2201,44 @@ label {
 	gap: var(--e-1);
 }
 
+/*
+ * El borde transparente esta siempre puesto (no aparece al activarse) para que
+ * el texto no se corra 1.5px cuando cambia de seccion. El padding va compensado.
+ */
 .admin-sidebar a {
 	display: flex;
 	flex-direction: column;
 	gap: 2px;
-	padding: var(--e-3) var(--e-4);
-	border-radius: var(--radio);
-	border-left: 3px solid transparent;
+	padding: calc(var(--e-3) - 1.5px) calc(var(--e-4) - 1.5px);
+	border: 1.5px solid transparent;
+	border-radius: var(--forma-control);
 	color: var(--texto);
 	text-decoration: none;
-	transition: background var(--transicion), border-color var(--transicion);
+	transition: background var(--transicion);
 }
 
 .admin-sidebar a:hover {
 	background: var(--superficie-2);
 }
 
+/*
+ * Misma pieza que el indicador de la nav: relleno plano, arcoiris solo en el
+ * aro. Las dos barras de pestañas de la app marcan "estas aca" de la misma
+ * forma, que es lo que las vuelve un sistema y no dos inventos separados.
+ */
 .admin-sidebar a.active {
-	background: var(--acento-suave);
-	border-left-color: var(--decorativo);
+	background:
+		linear-gradient(var(--acento-suave), var(--acento-suave)) padding-box,
+		conic-gradient(
+				from var(--angulo),
+				var(--marca-500),
+				var(--acido-cian),
+				var(--acido-lima),
+				var(--acido-magenta),
+				var(--marca-500)
+			)
+			border-box;
+	box-shadow: 0 0 calc(14px * var(--psico)) rgba(168, 85, 247, calc(0.35 * var(--psico)));
 }
 
 .admin-sidebar a.active .admin-sidebar-label {
@@ -1077,22 +2275,39 @@ label {
 		gap: var(--e-4);
 	}
 
+	/*
+	 * En angosto el panel deja de ser una columna y pasa a ser un rail que
+	 * scrollea en horizontal, con los grupos uno detras de otro y su titulo
+	 * arriba. Antes las seis secciones se envolvian en filas sin etiquetar:
+	 * quedaba una grilla de chips sin orden aparente y sin decir de que era
+	 * cada uno.
+	 */
 	.admin-sidebar {
 		position: static;
+		display: flex;
+		gap: var(--e-5);
+		overflow-x: auto;
+		padding-bottom: var(--e-2);
+		scrollbar-width: thin;
+	}
+
+	.admin-sidebar-grupo + .admin-sidebar-grupo {
+		margin-top: 0;
+		/* La linea es el limite entre grupos, que en fila no lo da el espacio solo. */
+		padding-left: var(--e-5);
+		border-left: 1px solid var(--borde);
+	}
+
+	.admin-sidebar-titulo {
+		padding-left: 0;
 	}
 
 	.admin-sidebar ul {
 		flex-direction: row;
-		flex-wrap: wrap;
 	}
 
 	.admin-sidebar a {
-		border-left: none;
-		border-bottom: 3px solid transparent;
-	}
-
-	.admin-sidebar a.active {
-		border-bottom-color: var(--decorativo);
+		white-space: nowrap;
 	}
 
 	.admin-sidebar-desc {
@@ -1229,10 +2444,16 @@ label {
    Modal
    ========================================================================== */
 
+/*
+ * El velo se oscurece y desenfoca el fondo. No es decoracion: detras hay un
+ * patron de altisimo contraste en movimiento, y sin apagarlo el modal compite
+ * con el en vez de recibir la atencion.
+ */
 .modal-fondo {
 	position: fixed;
 	inset: 0;
-	background: rgba(31, 41, 55, 0.55);
+	background: rgba(7, 7, 13, 0.72);
+	backdrop-filter: blur(6px) saturate(0.5);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -1243,7 +2464,7 @@ label {
 .modal-caja {
 	background: var(--superficie);
 	border: 1px solid var(--borde);
-	border-radius: var(--radio-grande);
+	border-radius: var(--forma-panel);
 	max-width: 480px;
 	width: 100%;
 	max-height: 90vh;
@@ -1278,9 +2499,12 @@ label {
 	min-height: var(--target-min);
 	min-width: var(--target-min);
 	padding: var(--e-2);
-	font-size: 1.125rem;
 	line-height: 1;
 	flex-shrink: 0;
+	/* Centra el SVG dentro del area de 44px sin depender de la metrica de una fuente. */
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .modal-cerrar:hover {
@@ -1302,6 +2526,86 @@ label {
 }
 
 /* ==========================================================================
+   Generador y escáner de QR
+   ========================================================================== */
+
+.qr-generador {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--e-5);
+	/* stretch, no flex-start: el preview vacio se estiraba menos que los controles
+	   y quedaba flotando a media altura. Ahora los dos bloques miden lo mismo. */
+	align-items: stretch;
+	margin: var(--e-4) 0;
+}
+
+.qr-generador-controles {
+	flex: 1 1 260px;
+}
+
+/* Los .campo traen margin-bottom; dentro del generador el gap ya separa. */
+.qr-generador-controles .campo:last-child {
+	margin-bottom: 0;
+}
+
+.qr-preview {
+	flex: 0 0 auto;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--e-2);
+	justify-content: center;
+	padding: var(--e-4);
+	background: var(--superficie-2);
+	border-radius: var(--forma-panel);
+	min-width: 232px;
+	flex: 1 1 232px;
+	/* Texto centrado cuando esta vacio: es un placeholder, no contenido a leer en fila. */
+	text-align: center;
+}
+
+/* Fondo blanco fijo: el lector necesita el contraste del QR y las superficies
+   cambian con el tema. */
+.qr-canvas {
+	display: block;
+	background: var(--blanco);
+	border-radius: var(--forma-control);
+	padding: var(--e-2);
+}
+
+.qr-preview-codigo {
+	margin: 0;
+	font-family: var(--fuente-mono);
+	font-weight: 700;
+	color: var(--texto-fuerte);
+}
+
+.fila-codigo {
+	display: flex;
+	gap: var(--e-2);
+	align-items: stretch;
+}
+
+.fila-codigo input {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.qr-scanner {
+	display: flex;
+	flex-direction: column;
+	gap: var(--e-2);
+}
+
+.qr-scanner-video {
+	width: 100%;
+	aspect-ratio: 1;
+	object-fit: cover;
+	background: var(--tinta-900);
+	border-radius: var(--radio);
+}
+
+/* ==========================================================================
    Responsive
    ========================================================================== */
 
@@ -1314,7 +2618,41 @@ label {
 	.nav {
 		flex-wrap: wrap;
 		padding: var(--e-2) var(--e-4);
-		gap: var(--e-1);
+		gap: var(--e-2);
+	}
+
+	/*
+	 * El rail baja a una fila propia de ancho completo y scrollea en horizontal.
+	 * Antes las pestañas se envolvian sueltas en dos o tres filas segun el largo
+	 * de los labels y el ancho del telefono: la barra cambiaba de alto entre
+	 * paginas y el contenido saltaba debajo. Ahora la nav mide siempre lo mismo.
+	 */
+	.nav-rail {
+		order: 3;
+		flex-basis: 100%;
+		overflow-x: auto;
+		scrollbar-width: none;
+		/* Difuminado en los extremos: es la unica pista de que hay mas pestañas
+		   fuera de la vista, ya que la barra de scroll esta oculta. */
+		mask-image: linear-gradient(
+			90deg,
+			transparent,
+			#000 var(--e-5),
+			#000 calc(100% - var(--e-5)),
+			transparent
+		);
+	}
+
+	.nav-rail::-webkit-scrollbar {
+		display: none;
+	}
+
+	/*
+	 * En 375px la primera fila no entra con todo. Se cae el nombre y el rol:
+	 * el chip de Admin ya dice el rol, y el nombre esta a un toque en Mi cuenta.
+	 */
+	.nav-usuario {
+		display: none;
 	}
 
 	.contenido {

@@ -31,56 +31,63 @@ export function ComparativaPlanes({ membresias, onContratar, contratando, deshab
 		return <p className="ayuda">Todavía no hay planes disponibles para contratar — hablalo con un admin.</p>;
 	}
 
+	/*
+	 * La tabla va dentro de una .tarjeta y no suelta sobre la pagina: el fondo del
+	 * body es un patron de mucho contraste y el texto encima queda ilegible. Es la
+	 * misma regla que ya siguen .encabezado-pagina y SuscripcionSection.
+	 */
 	return (
-		<div className="tabla-scroll">
-			<table className="tabla tabla-planes">
-				<caption>
-					Comparación de los {membresias.length} planes disponibles. Cada fila es una característica; cada columna, un plan.
-				</caption>
-				<thead>
-					<tr>
-						<th scope="col">
-							<span className="solo-lectores">Característica</span>
-						</th>
-						{membresias.map((m) => (
-							<th key={m.id} scope="col" className="plan-columna">
-								{m.nombre}
-								<span className="plan-precio-th">${m.precio}</span>
-							</th>
-						))}
-					</tr>
-				</thead>
-				<tbody>
-					{ATRIBUTOS.map((attr) => (
-						<tr key={attr.etiqueta}>
-							<th scope="row">{attr.etiqueta}</th>
-							{membresias.map((m) => (
-								<td key={m.id}>{attr.valor(m)}</td>
-							))}
-						</tr>
-					))}
-				</tbody>
-				{onContratar && (
-					<tfoot>
+		<section className="tarjeta">
+			<div className="tabla-scroll">
+				<table className="tabla tabla-planes">
+					<caption>
+						Comparación de los {membresias.length} planes disponibles. Cada fila es una característica; cada columna, un plan.
+					</caption>
+					<thead>
 						<tr>
-							<th scope="row">
-								<span className="solo-lectores">Contratar</span>
+							<th scope="col">
+								<span className="solo-lectores">Característica</span>
 							</th>
 							{membresias.map((m) => (
-								<td key={m.id}>
-									<button
-										type="button"
-										onClick={() => onContratar(m.id)}
-										disabled={deshabilitado || contratando === m.id}
-									>
-										{contratando === m.id ? 'Generando pago…' : `Contratar ${m.nombre}`}
-									</button>
-								</td>
+								<th key={m.id} scope="col" className="plan-columna">
+									{m.nombre}
+									<span className="plan-precio-th">${m.precio}</span>
+								</th>
 							))}
 						</tr>
-					</tfoot>
-				)}
-			</table>
-		</div>
+					</thead>
+					<tbody>
+						{ATRIBUTOS.map((attr) => (
+							<tr key={attr.etiqueta}>
+								<th scope="row">{attr.etiqueta}</th>
+								{membresias.map((m) => (
+									<td key={m.id}>{attr.valor(m)}</td>
+								))}
+							</tr>
+						))}
+					</tbody>
+					{onContratar && (
+						<tfoot>
+							<tr>
+								<th scope="row">
+									<span className="solo-lectores">Contratar</span>
+								</th>
+								{membresias.map((m) => (
+									<td key={m.id}>
+										<button
+											type="button"
+											onClick={() => onContratar(m.id)}
+											disabled={deshabilitado || contratando === m.id}
+										>
+											{contratando === m.id ? 'Generando pago…' : `Contratar ${m.nombre}`}
+										</button>
+									</td>
+								))}
+							</tr>
+						</tfoot>
+					)}
+				</table>
+			</div>
+		</section>
 	);
 }

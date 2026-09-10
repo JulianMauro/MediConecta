@@ -15,6 +15,7 @@ import com.mediconecta.modulos.membresia.entity.SuscripcionUsuario;
 import com.mediconecta.modulos.membresia.repository.SuscripcionUsuarioRepository;
 import com.mediconecta.modulos.pago.dto.PagoResponse;
 import com.mediconecta.modulos.pago.entity.ConceptoPago;
+import com.mediconecta.modulos.pago.entity.EstadoPago;
 import com.mediconecta.modulos.pago.entity.Pago;
 import com.mediconecta.modulos.pago.repository.PagoRepository;
 import com.mediconecta.modulos.strike.entity.Strike;
@@ -61,7 +62,19 @@ public class PagoService {
 	@Transactional
 	public PagoResponse confirmar(Usuario solicitante, Long id, String referenciaPasarela) {
 		Pago pago = buscarConPermiso(solicitante, id);
-		pago.confirmar(referenciaPasarela);
+
+		if (pago.getEstado() == EstadoPago.RECHAZADO) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "el pago fue rechazado: no se puede confirmar");
+		}
+
+		/*
+		 * Si ya estaba pagado, se devuelve el estado actual sin volver a aplicar los
+		 * efectos. Es lo que vuelve idempotente al endpoint: un webhook repetido de la
+		 * pasarela no puede generar una segunda suscripcion ni saldar dos veces.
+		 */
+		if (!pago.confirmar(referenciaPasarela)) {
+			return PagoResponse.desde(pago);
+		}
 
 		if (pago.getConcepto() == ConceptoPago.TIEMPO_EXTRA) {
 			Strike strike = strikeRepository.findByPagoId(pago.getId())
@@ -82,7 +95,9 @@ public class PagoService {
 	@Transactional
 	public PagoResponse rechazar(Usuario solicitante, Long id) {
 		Pago pago = buscarConPermiso(solicitante, id);
-		pago.rechazar();
+		if (!pago.rechazar() && pago.getEstado() == EstadoPago.PAGADO) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "el pago ya fue confirmado: no se puede rechazar");
+		}
 		return PagoResponse.desde(pago);
 	}
 

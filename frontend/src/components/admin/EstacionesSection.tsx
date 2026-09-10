@@ -13,7 +13,10 @@ interface Props {
 
 export function EstacionesSection({ onCambio }: Props) {
 	const [estaciones, setEstaciones] = useState<EstacionResponse[]>([]);
-	const [modalCrearAbierto, setModalCrearAbierto] = useState(false);
+	// Un solo modal para alta y edicion: el formulario es identico, lo unico que
+	// cambia es el titulo, el texto del boton y a que endpoint pega al guardar.
+	const [modoModal, setModoModal] = useState<'crear' | 'editar' | null>(null);
+	const [editandoId, setEditandoId] = useState<number | null>(null);
 	const [form, setForm] = useState(FORM_VACIO);
 	const [error, setError] = useState<string | null>(null);
 	const [guardando, setGuardando] = useState(false);
@@ -33,20 +36,49 @@ export function EstacionesSection({ onCambio }: Props) {
 
 	function abrirCrear() {
 		setForm(FORM_VACIO);
+		setEditandoId(null);
 		setError(null);
-		setModalCrearAbierto(true);
+		setModoModal('crear');
 	}
 
-	async function crear() {
+	function abrirEditar(est: EstacionResponse) {
+		setForm({ nombre: est.nombre, direccion: est.direccion, capacidad: est.capacidad });
+		setEditandoId(est.id);
+		setError(null);
+		setModoModal('editar');
+	}
+
+	async function guardar() {
 		setError(null);
 		setGuardando(true);
 		try {
-			await estacionesApi.crear({ ...form, latitud: null, longitud: null });
-			setModalCrearAbierto(false);
+			if (editandoId != null) {
+				// El update no manda coordenadas: si cambio la direccion, el backend
+				// las recalcula solo (y las borra si no las puede resolver).
+				await estacionesApi.actualizar(editandoId, form);
+			} else {
+				await estacionesApi.crear({ ...form, latitud: null, longitud: null });
+			}
+			setModoModal(null);
 			recargar();
 			onCambio?.();
 		} catch (err) {
-			setError(err instanceof ApiError ? err.message : 'no se pudo crear la estación');
+			const accion = editandoId != null ? 'guardar los cambios' : 'crear la estación';
+			setError(err instanceof ApiError ? err.message : `no se pudo ${accion}`);
+		} finally {
+			setGuardando(false);
+		}
+	}
+
+	/** Reintenta resolver las coordenadas de una estacion ya guardada. */
+	async function recalcularCoordenadas(id: number) {
+		setError(null);
+		setGuardando(true);
+		try {
+			await estacionesApi.geocodificar(id);
+			recargar();
+		} catch (err) {
+			setError(err instanceof ApiError ? err.message : 'no se pudieron obtener las coordenadas');
 		} finally {
 			setGuardando(false);
 		}
@@ -119,10 +151,33 @@ export function EstacionesSection({ onCambio }: Props) {
 										{anclajes.length} de {est.capacidad} anclajes creados
 										{capacidadCompleta && ' — llegaste al máximo para esta estación.'}
 									</p>
+									<button className="boton-secundario boton-chico" onClick={() => abrirEditar(est)}>
+										Editar estación
+									</button>
 									<button className="boton-chico" onClick={abrirModalAnclaje} disabled={capacidadCompleta}>
 										+ Agregar anclaje
 									</button>
 								</div>
+
+								{/* Sin coordenadas la estacion no se puede pintar en el mapa: se avisa
+								    y se ofrece el reintento, en vez de que el mapa aparezca vacio sin
+								    explicacion. */}
+								<p className="ayuda">
+									{est.latitud != null && est.longitud != null ? (
+										<>
+											Coordenadas: {est.latitud.toFixed(5)}, {est.longitud.toFixed(5)}
+										</>
+									) : (
+										<>Sin coordenadas — no aparece en el mapa. </>
+									)}{' '}
+									<button
+										className="boton-texto boton-chico"
+										onClick={() => recalcularCoordenadas(est.id)}
+										disabled={guardando}
+									>
+										Recalcular desde la dirección
+									</button>
+								</p>
 								<ul className="chips">
 									{anclajes.map((a) => (
 										<li key={a.id} className={`chip chip-${a.estado.toLowerCase()}`}>
@@ -141,18 +196,26 @@ export function EstacionesSection({ onCambio }: Props) {
 				{estaciones.length === 0 && <li className="ayuda">Todavía no creaste ninguna estación.</li>}
 			</ul>
 
-			{modalCrearAbierto && (
+			{modoModal && (
 				<Modal
-					title="Nueva estación"
-					description="Un punto físico donde se instalan anclajes para dejar y retirar bicis."
-					onClose={() => setModalCrearAbierto(false)}
+					title={modoModal === 'editar' ? 'Editar estación' : 'Nueva estación'}
+					description={
+						modoModal === 'editar'
+							? 'Si cambiás la dirección, las coordenadas del mapa se recalculan solas.'
+							: 'Un punto físico donde se instalan anclajes para dejar y retirar bicis.'
+					}
+					onClose={() => setModoModal(null)}
 					footer={
 						<>
-							<button className="boton-secundario" onClick={() => setModalCrearAbierto(false)}>
+							<button className="boton-secundario" onClick={() => setModoModal(null)}>
 								Cancelar
 							</button>
-							<button onClick={crear} disabled={!form.nombre || !form.direccion || guardando}>
-								{guardando ? 'Creando...' : 'Crear estación'}
+							<button onClick={guardar} disabled={!form.nombre || !form.direccion || guardando}>
+								{guardando
+									? 'Guardando...'
+									: modoModal === 'editar'
+										? 'Guardar cambios'
+										: 'Crear estación'}
 							</button>
 						</>
 					}

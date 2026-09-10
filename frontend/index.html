@@ -1,13 +1,72 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <title>PeopleBikes</title>
+    <!-- Fuente display (solo logo y h1; el cuerpo sigue con la del sistema). -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>
+    <!--
+      Filtro de distorsion del mesh gradient del fondo (ver "body::after" en index.css).
+      Va en el HTML y no en el CSS porque feTurbulence/feDisplacementMap no tienen
+      equivalente en CSS: se declara en SVG y se referencia con filter: url(#...).
+      El <animate> mueve la frecuencia del ruido, que es lo que hace que la mancha
+      ondule en vez de quedarse quieta. El SVG mide 0x0: solo aporta el <defs>.
+    -->
+    <svg class="psico-filtros" aria-hidden="true" focusable="false" width="0" height="0">
+      <defs>
+        <filter id="psico-warp" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+          <!--
+            La turbulencia es ESTATICA a proposito. Animar baseFrequency obliga al
+            navegador a recalcular el ruido de Perlin sobre toda la ventana, aplicar
+            el mapa de desplazamiento y volver a difuminar 60px en cada cuadro: es,
+            por lejos, lo mas caro de la pagina. Estatica se calcula una sola vez y
+            queda cacheada; la mancha igual ondula porque la capa que la lleva se
+            mueve con transform (ver body::after en index.css).
+          -->
+          <feTurbulence type="fractalNoise" baseFrequency="0.004 0.008" numOctaves="1" seed="7" result="ruido" />
+          <feDisplacementMap in="SourceGraphic" in2="ruido" scale="140" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+
+        <!--
+          Relieve del borde troquelado de las tarjetas "ticket". El snippet original
+          referencia url(#bump) pero no incluye el filtro, asi que este es propio:
+          toma la silueta (SourceAlpha), la difumina para tener una pendiente, la
+          ilumina en diagonal para sacar un brillo especular y lo suma al dibujo.
+          El efecto es que las perforaciones se ven hundidas en papel, no recortadas.
+        -->
+        <filter id="bump" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="1.4" result="pendiente" />
+          <feSpecularLighting
+            in="pendiente"
+            surfaceScale="2.5"
+            specularConstant="0.7"
+            specularExponent="22"
+            lighting-color="#ffffff"
+            result="brillo"
+          >
+            <feDistantLight azimuth="235" elevation="55" />
+          </feSpecularLighting>
+          <!-- El brillo se recorta a la silueta: si no, desborda por fuera del papel. -->
+          <feComposite in="brillo" in2="SourceAlpha" operator="in" result="brillo-recortado" />
+          <feComposite
+            in="SourceGraphic"
+            in2="brillo-recortado"
+            operator="arithmetic"
+            k1="0"
+            k2="1"
+            k3="1"
+            k4="0"
+          />
+        </filter>
+      </defs>
+    </svg>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

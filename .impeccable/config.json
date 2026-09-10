@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "frontend/src/index.css"
+        ],
+        "createdAt": "2026-09-10T17:41:05.293Z",
+        "reason": "PRODUCT.md define el gradiente de titulos como identidad deliberada de PeopleBikes; tiene fallback a color solido y control maestro --psico"
+      }
+    ]
+  }
+}

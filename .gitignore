@@ -36,7 +36,11 @@ target/
 *.ipr
 
 # Variables de entorno: nunca subir secretos al repo (.env.example si va)
+# El patron cubre las variantes que genera Vite (.env.local, .env.production),
+# que con un ".env" pelado quedaban afuera y se podian commitear sin querer.
 .env
+.env.*
+!.env.example
 
 # Config local de Claude Code (herramienta, no parte de la app)
 .claude/

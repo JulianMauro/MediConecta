@@ -1,14 +1,10 @@
-import { useEffect, useState } from 'react';
-import { strikesApi } from '../../api/strikes';
 import type { StrikeResponse } from '../../types/dto';
 
-export function StrikesSection() {
-	const [strikes, setStrikes] = useState<StrikeResponse[]>([]);
+interface Props {
+	strikes: StrikeResponse[];
+}
 
-	useEffect(() => {
-		strikesApi.listarPropios().then(setStrikes);
-	}, []);
-
+export function StrikesSection({ strikes }: Props) {
 	return (
 		<section className="tarjeta">
 			<h2>Strikes</h2>

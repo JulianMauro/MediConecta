@@ -1660,6 +1660,97 @@ label {
 	font-weight: 700;
 }
 
+/* Contador de strikes activos arriba de las notificaciones. El nivel suma texto y
+   barra segmentada: no se comunica solo por color (WCAG 1.4.1). */
+.contador-strikes {
+	display: flex;
+	align-items: center;
+	gap: var(--e-4);
+	padding: var(--e-3) var(--e-4);
+	margin-bottom: var(--e-3);
+	border-radius: var(--radio);
+	border: 1px solid var(--borde);
+	background: var(--superficie-2);
+	--nivel-texto: var(--texto-fuerte);
+	--nivel-fondo: var(--decorativo);
+}
+
+.contador-strikes-ok {
+	--nivel-texto: var(--ok-texto);
+	--nivel-fondo: var(--ok-texto);
+}
+
+.contador-strikes-aviso {
+	--nivel-texto: var(--aviso-texto);
+	--nivel-fondo: var(--aviso-texto);
+	border-color: var(--aviso-texto);
+}
+
+.contador-strikes-bloqueo {
+	--nivel-texto: var(--error-texto);
+	--nivel-fondo: var(--error-texto);
+	border-color: var(--error-texto);
+	background: var(--error-fondo);
+}
+
+.contador-strikes-cifra {
+	display: flex;
+	align-items: baseline;
+	gap: var(--e-1);
+	font-family: var(--fuente-display);
+	color: var(--nivel-texto);
+	line-height: 1;
+}
+
+.contador-strikes-numero {
+	font-size: var(--txt-h1);
+}
+
+.contador-strikes-total {
+	font-size: var(--txt-h3);
+	color: var(--texto-suave);
+}
+
+.contador-strikes-detalle {
+	display: flex;
+	flex-direction: column;
+	gap: var(--e-1);
+	flex: 1;
+	min-width: 0;
+}
+
+.contador-strikes-titulo {
+	font-size: var(--txt-micro);
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--texto-suave);
+}
+
+.contador-strikes-barra {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: var(--e-1);
+}
+
+.contador-strikes-barra li {
+	height: 6px;
+	border-radius: var(--radio-pill);
+	background: var(--borde);
+}
+
+.contador-strikes-barra li.lleno {
+	background: var(--nivel-fondo);
+}
+
+.contador-strikes-ayuda {
+	font-size: var(--txt-micro);
+	color: var(--texto);
+}
+
 /* El punto acompana al peso: el estado no se comunica solo por tipografia. */
 .notificacion-no-leida::before {
 	content: '';

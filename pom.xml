@@ -55,6 +55,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
+		<!-- ActiveMQ: mensajeria JMS (colas para tickets/chat P2P, topico para eventos de viaje) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-activemq</artifactId>
+		</dependency>
 
 		<!-- JJWT: generacion y validacion de los tokens JWT -->
 		<dependency>

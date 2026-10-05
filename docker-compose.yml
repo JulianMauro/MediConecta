@@ -1,12 +1,13 @@
 # Levanta todo el sistema con: docker compose up --build
 #
-# Son dos contenedores:
+# Son tres contenedores:
 #   postgres -> la base de datos
+#   activemq -> el broker JMS (colas de tickets/chat, topico de eventos de viaje)
 #   backend  -> la aplicacion Spring Boot
 #
 # Se comunican por la red interna "mediconecta-network". Dentro de esa red
 # cada servicio es alcanzable por su nombre, por eso la URL de la base
-# apunta a "postgres" y no a "localhost".
+# apunta a "postgres" y no a "localhost" (lo mismo para "activemq").
 
 services:
 
@@ -56,6 +57,28 @@ services:
       postgres:
         condition: service_healthy
 
+  activemq:
+    # Broker JMS: procesa la cola de tickets, la de chat P2P y el topico de eventos
+    # de viaje. Consola web de administracion en http://localhost:8161 (admin/admin).
+    image: apache/activemq-classic:6.1.6
+    container_name: mediconecta-activemq
+    environment:
+      ACTIVEMQ_ADMIN_LOGIN: ${ACTIVEMQ_USER:-admin}
+      ACTIVEMQ_ADMIN_PASSWORD: ${ACTIVEMQ_PASSWORD:-admin}
+    ports:
+      # OpenWire: es el que usa la app para mandar/recibir mensajes JMS.
+      - "61616:61616"
+      # Consola web de colas/topicos.
+      - "8161:8161"
+    networks:
+      - mediconecta-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -u ${ACTIVEMQ_USER:-admin}:${ACTIVEMQ_PASSWORD:-admin} http://localhost:8161/admin/xml/queues.jsp || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
   backend:
     build: .
     container_name: mediconecta-backend
@@ -64,6 +87,9 @@ services:
       DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-mediconecta_db}
       DATABASE_USERNAME: ${POSTGRES_USER:-mediconecta}
       DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-mediconecta}
+      ACTIVEMQ_BROKER_URL: tcp://activemq:61616
+      ACTIVEMQ_USER: ${ACTIVEMQ_USER:-admin}
+      ACTIVEMQ_PASSWORD: ${ACTIVEMQ_PASSWORD:-admin}
       JWT_SECRET: ${JWT_SECRET:-mediconecta-clave-secreta-de-desarrollo-cambiar-en-produccion-1234567890}
       GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@mediconecta.com}
@@ -74,6 +100,8 @@ services:
     depends_on:
       postgres:
         # No arranca hasta que la base este realmente lista, no solo iniciada.
+        condition: service_healthy
+      activemq:
         condition: service_healthy
     networks:
       - mediconecta-network

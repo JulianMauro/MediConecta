@@ -268,3 +268,36 @@ export interface UsuariosActivosResponse {
 	cantidad: number;
 	timestamp: string;
 }
+
+// ---- tickets ----
+export type EstadoTicket = 'ABIERTO' | 'EN_CHAT' | 'RESUELTO';
+export type CategoriaTicket = 'ANCLAJE' | 'BICICLETA' | 'PAGO' | 'CUENTA' | 'OTRO';
+
+export interface TicketRequest {
+	viajeId: number | null;
+	categoria: CategoriaTicket;
+	motivo: string;
+}
+
+export interface TicketResponse {
+	id: number;
+	usuarioId: number;
+	viajeId: number | null;
+	adminId: number | null;
+	categoria: CategoriaTicket;
+	motivo: string;
+	estado: EstadoTicket;
+	fechaCreacion: string;
+	fechaCierre: string | null;
+}
+
+// ---- chat P2P ----
+export interface ChatMensajeResponse {
+	id: number;
+	ticketId: number;
+	remitenteId: number;
+	remitenteRol: Rol;
+	contenido: string;
+	fechaEnvio: string;
+	fechaEntrega: string | null;
+}

@@ -11,6 +11,7 @@ import { PlanesPage } from './pages/PlanesPage';
 import { EstacionesPage } from './pages/EstacionesPage';
 import { MapPage } from './pages/MapPage';
 import { AdminPage } from './pages/AdminPage';
+import { TicketsPage } from './pages/TicketsPage';
 import {
 	AdminAlmacenes,
 	AdminEstaciones,
@@ -64,6 +65,14 @@ export default function App() {
 							element={
 								<ProtectedRoute>
 									<PlanesPage />
+								</ProtectedRoute>
+							}
+						/>
+						<Route
+							path="/tickets"
+							element={
+								<ProtectedRoute>
+									<TicketsPage />
 								</ProtectedRoute>
 							}
 						/>

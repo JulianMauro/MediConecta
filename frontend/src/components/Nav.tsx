@@ -17,6 +17,7 @@ const PESTANAS = [
 	{ to: '/mapa', label: 'Mapa', end: false },
 	{ to: '/estaciones', label: 'Estaciones', end: false },
 	{ to: '/planes', label: 'Planes', end: false },
+	{ to: '/tickets', label: 'Tickets', end: false },
 	{ to: '/cuenta', label: 'Mi cuenta', end: false },
 ];
 

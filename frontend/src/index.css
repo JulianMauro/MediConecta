@@ -2754,3 +2754,182 @@ label {
 		grid-template-columns: 1fr;
 	}
 }
+
+/* ==========================================================================
+   Tickets y chat P2P
+   ========================================================================== */
+
+.tickets-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+	gap: var(--e-5);
+	align-items: start;
+}
+
+.tickets-columna {
+	display: flex;
+	flex-direction: column;
+	gap: var(--e-5);
+}
+
+@media (max-width: 900px) {
+	.tickets-layout {
+		grid-template-columns: 1fr;
+	}
+}
+
+.lista-tickets {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--e-2);
+}
+
+.ticket-item {
+	display: flex;
+	align-items: center;
+	gap: var(--e-3);
+	border: 1px solid var(--borde);
+	border-radius: var(--e-2);
+	background: var(--superficie);
+}
+
+.ticket-item-activo {
+	border-color: var(--acento);
+	background: var(--acento-suave);
+}
+
+.ticket-item-boton {
+	all: unset;
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--e-1);
+	padding: var(--e-3);
+	cursor: pointer;
+}
+
+.ticket-item-boton:disabled {
+	cursor: default;
+}
+
+.ticket-item-boton:focus-visible {
+	outline: 2px solid var(--acento);
+	outline-offset: 2px;
+	border-radius: var(--e-2);
+}
+
+.ticket-item > .boton-chico {
+	margin-right: var(--e-3);
+}
+
+.ticket-item-cabecera {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: var(--e-2);
+}
+
+.ticket-item-motivo {
+	overflow-wrap: anywhere;
+}
+
+.ticket-item-meta {
+	font-size: var(--txt-micro);
+	color: var(--tinta-500);
+}
+
+.pill-ticket-abierto {
+	background: var(--aviso-100);
+	color: var(--tinta-900);
+	border-color: transparent;
+}
+
+.pill-ticket-en_chat {
+	background: var(--acento-suave);
+	color: var(--acento);
+	border-color: transparent;
+}
+
+.pill-ticket-resuelto {
+	background: var(--ok-fondo);
+	color: var(--ok-texto);
+	border-color: transparent;
+}
+
+.chat {
+	display: flex;
+	flex-direction: column;
+	gap: var(--e-3);
+}
+
+.chat-cabecera {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: var(--e-3);
+}
+
+.chat-cabecera h2 {
+	margin: 0;
+}
+
+.chat-mensajes {
+	display: flex;
+	flex-direction: column;
+	gap: var(--e-2);
+	min-height: 16rem;
+	max-height: 26rem;
+	overflow-y: auto;
+	padding: var(--e-3);
+	border: 1px solid var(--borde);
+	border-radius: var(--e-2);
+	background: var(--superficie-2);
+}
+
+.burbuja {
+	align-self: flex-start;
+	max-width: 80%;
+	padding: var(--e-2) var(--e-3);
+	border-radius: var(--e-3);
+	background: var(--superficie);
+	border: 1px solid var(--borde);
+}
+
+.burbuja-propia {
+	align-self: flex-end;
+	background: var(--acento-suave);
+	border-color: transparent;
+}
+
+.burbuja p {
+	margin: var(--e-1) 0;
+	overflow-wrap: anywhere;
+}
+
+.burbuja-autor,
+.burbuja-hora {
+	font-size: var(--txt-micro);
+	color: var(--tinta-500);
+}
+
+.burbuja-autor {
+	font-weight: 600;
+}
+
+.chat-form {
+	display: flex;
+	gap: var(--e-2);
+}
+
+.chat-form input {
+	flex: 1;
+	min-width: 0;
+}
+
+.pill-categoria {
+	align-self: flex-start;
+}

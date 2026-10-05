@@ -40,7 +40,7 @@ public class AuthService {
 	public AuthResponse login(LoginRequest request) {
 		String email = request.email().trim().toLowerCase();
 
-		try {
+		try {                                           
 			// Internamente compara la password con el hash BCrypt guardado.
 			authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(email, request.password()));

@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { RealtimeUsers } from './home/RealtimeUsers';
+import { IconoBici, IconoCuenta, IconoEstaciones, IconoMapa, IconoPlanes, IconoTickets } from './ui/Iconos';
 
 /**
  * Pestañas del cliente, en el orden del recorrido real y no en el que fueron
@@ -13,12 +14,13 @@ import { RealtimeUsers } from './home/RealtimeUsers';
  * del cliente sino otro rol, con otra escena de uso. Va del lado de la sesion.
  */
 const PESTANAS = [
-	{ to: '/', label: 'Inicio', end: true },
-	{ to: '/mapa', label: 'Mapa', end: false },
-	{ to: '/estaciones', label: 'Estaciones', end: false },
-	{ to: '/planes', label: 'Planes', end: false },
-	{ to: '/tickets', label: 'Tickets', end: false },
-	{ to: '/cuenta', label: 'Mi cuenta', end: false },
+	{ to: '/', label: 'Inicio', corto: 'Inicio', Icono: IconoBici, end: true },
+	{ to: '/mapa', label: 'Mapa', corto: 'Mapa', Icono: IconoMapa, end: false },
+	{ to: '/estaciones', label: 'Estaciones', corto: 'Estaciones', Icono: IconoEstaciones, end: false },
+	{ to: '/planes', label: 'Planes', corto: 'Planes', Icono: IconoPlanes, end: false },
+	{ to: '/tickets', label: 'Tickets', corto: 'Tickets', Icono: IconoTickets, end: false },
+	// "Mi" se cae en el celular: con seis pestañas en 360px cada letra cuenta.
+	{ to: '/cuenta', label: 'Mi cuenta', corto: 'Cuenta', Icono: IconoCuenta, end: false },
 ];
 
 /**
@@ -121,9 +123,29 @@ export function Nav() {
 				<strong>{usuario.nombre}</strong>
 				{esAdmin ? 'Administrador' : 'Usuario'}
 			</span>
-			<button type="button" className="boton-secundario boton-chico" onClick={logout}>
+			{/* En el celular no entra en la barra: pasa a "Mi cuenta", como en las apps nativas. */}
+			<button type="button" className="boton-secundario boton-chico solo-escritorio" onClick={logout}>
 				Salir
 			</button>
+
+			{/*
+			 * Barra de pestañas del celular. Es la misma lista de destinos que el rail
+			 * de arriba — mismo orden, mismas rutas — pero abajo, al alcance del pulgar,
+			 * que es como la resuelven Citi Bike, Bicing y BA Ecobici: en la calle el
+			 * telefono se usa con una mano. En escritorio no se muestra (display: none,
+			 * asi que tampoco existe para el lector de pantalla) y en celular el rail
+			 * es el que se oculta: nunca hay dos navegaciones a la vez.
+			 */}
+			<div className="barra-pestanas">
+				{PESTANAS.map(({ to, corto, Icono, end }) => (
+					<NavLink key={to} to={to} end={end}>
+						<span className="barra-pestanas-icono">
+							<Icono />
+						</span>
+						<span className="barra-pestanas-label">{corto}</span>
+					</NavLink>
+				))}
+			</div>
 		</nav>
 	);
 }

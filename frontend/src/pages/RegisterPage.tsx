@@ -35,21 +35,40 @@ export function RegisterPage() {
 				<h1>Crear cuenta</h1>
 				<label>
 					Nombre
-					<input value={form.nombre} onChange={(e) => actualizar('nombre', e.target.value)} required />
+					{/* autoComplete e inputMode: el telefono autocompleta los datos y abre el
+					    teclado que corresponde (numerico para DNI y telefono). */}
+					<input
+						value={form.nombre}
+						onChange={(e) => actualizar('nombre', e.target.value)}
+						autoComplete="given-name"
+						required
+					/>
 				</label>
 				<label>
 					Apellido
-					<input value={form.apellido} onChange={(e) => actualizar('apellido', e.target.value)} required />
+					<input
+						value={form.apellido}
+						onChange={(e) => actualizar('apellido', e.target.value)}
+						autoComplete="family-name"
+						required
+					/>
 				</label>
 				<label>
 					Email
-					<input type="email" value={form.email} onChange={(e) => actualizar('email', e.target.value)} required />
+					<input
+						type="email"
+						value={form.email}
+						onChange={(e) => actualizar('email', e.target.value)}
+						autoComplete="email"
+						required
+					/>
 				</label>
 				<label>
 					Password
 					<input
 						type="password"
 						minLength={8}
+						autoComplete="new-password"
 						value={form.password}
 						onChange={(e) => actualizar('password', e.target.value)}
 						required
@@ -57,11 +76,21 @@ export function RegisterPage() {
 				</label>
 				<label>
 					DNI (opcional)
-					<input value={form.dni} onChange={(e) => actualizar('dni', e.target.value)} />
+					<input
+						value={form.dni}
+						onChange={(e) => actualizar('dni', e.target.value)}
+						inputMode="numeric"
+						autoComplete="off"
+					/>
 				</label>
 				<label>
 					Teléfono (opcional)
-					<input value={form.telefono} onChange={(e) => actualizar('telefono', e.target.value)} />
+					<input
+						type="tel"
+						value={form.telefono}
+						onChange={(e) => actualizar('telefono', e.target.value)}
+						autoComplete="tel"
+					/>
 				</label>
 				{error && <p className="error">{error}</p>}
 				<button type="submit" disabled={enviando}>

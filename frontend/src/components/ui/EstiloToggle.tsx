@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { fondo, tarjeta, type Opcion } from '../../lib/estilo';
+import { useEffect, useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { EVENTO_CAMBIO, fondo, tarjeta, type Opcion } from '../../lib/estilo';
 
 type Preferencia = typeof fondo;
 
@@ -9,6 +10,16 @@ function BotonEstilo({ preferencia, titulo }: { preferencia: Preferencia; titulo
 	// al documento, y si el boton asumiera otra cosa mostraria una etiqueta que no
 	// se corresponde con lo que se esta viendo.
 	const [valor, setValor] = useState<string>(preferencia.leer);
+
+	// Si la cambia el otro boton de la misma preferencia, este se pone al dia.
+	useEffect(() => {
+		function alCambiar(e: Event) {
+			const { atributo, valor: nuevo } = (e as CustomEvent<{ atributo: string; valor: string }>).detail;
+			if (atributo === preferencia.atributo) setValor(nuevo);
+		}
+		window.addEventListener(EVENTO_CAMBIO, alCambiar);
+		return () => window.removeEventListener(EVENTO_CAMBIO, alCambiar);
+	}, [preferencia]);
 
 	const actual: Opcion = preferencia.actual(valor);
 	const siguiente: Opcion = preferencia.siguiente(valor);
@@ -39,8 +50,24 @@ function BotonEstilo({ preferencia, titulo }: { preferencia: Preferencia; titulo
  * iniciada, y el login es justamente donde mas se ve el fondo.
  */
 export function EstiloToggle() {
+	const { usuario } = useAuth();
+	/*
+	 * Con sesion, en el celular el panel flotante chocaria con la barra de pestañas
+	 * y taparia contenido: ahi se oculta (ver index.css) y las mismas dos opciones
+	 * pasan a "Mi cuenta", que es donde una app de telefono guarda su apariencia.
+	 */
 	return (
-		<div className="estilo-toggle">
+		<div className={usuario ? 'estilo-toggle estilo-toggle-con-sesion' : 'estilo-toggle'}>
+			<BotonEstilo preferencia={fondo} titulo="Fondo" />
+			<BotonEstilo preferencia={tarjeta} titulo="Tarjetas" />
+		</div>
+	);
+}
+
+/** Las mismas dos opciones, en el flujo de la pagina en vez de flotando. */
+export function EstiloOpciones() {
+	return (
+		<div className="estilo-opciones">
 			<BotonEstilo preferencia={fondo} titulo="Fondo" />
 			<BotonEstilo preferencia={tarjeta} titulo="Tarjetas" />
 		</div>

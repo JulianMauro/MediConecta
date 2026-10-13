@@ -38,7 +38,42 @@ export function ComparativaPlanes({ membresias, onContratar, contratando, deshab
 	 */
 	return (
 		<section className="tarjeta">
-			<div className="tabla-scroll">
+			{/*
+			 * En el celular la tabla no entra: tres planes en columnas piden ~520px y
+			 * obligaban a scrollear de costado para ver el boton de contratar. Ahi se
+			 * muestra esta lista, un plan debajo del otro con sus mismos atributos y su
+			 * boton al pie, al alcance del pulgar. Solo una de las dos versiones esta
+			 * visible a la vez (display: none), asi que el lector de pantalla tampoco
+			 * las lee duplicadas.
+			 */}
+			<ul className="planes-movil">
+				{membresias.map((m) => (
+					<li key={m.id} className="plan-movil">
+						<div className="plan-movil-cabecera">
+							<h3>{m.nombre}</h3>
+							<span className="plan-movil-precio">${m.precio}</span>
+						</div>
+						<dl className="plan-movil-atributos">
+							{ATRIBUTOS.filter((attr) => attr.etiqueta !== 'Precio').map((attr) => (
+								<div key={attr.etiqueta}>
+									<dt>{attr.etiqueta}</dt>
+									<dd>{attr.valor(m)}</dd>
+								</div>
+							))}
+						</dl>
+						{onContratar && (
+							<button
+								type="button"
+								onClick={() => onContratar(m.id)}
+								disabled={deshabilitado || contratando === m.id}
+							>
+								{contratando === m.id ? 'Generando pago…' : `Contratar ${m.nombre}`}
+							</button>
+						)}
+					</li>
+				))}
+			</ul>
+			<div className="tabla-scroll planes-tabla">
 				<table className="tabla tabla-planes">
 					<caption>
 						Comparación de los {membresias.length} planes disponibles. Cada fila es una característica; cada columna, un plan.

@@ -127,8 +127,22 @@ function ChatPanel({
 	const [error, setError] = useState<string | null>(null);
 	const [enviando, setEnviando] = useState(false);
 	const finRef = useRef<HTMLDivElement>(null);
+	const panelRef = useRef<HTMLElement>(null);
 	const inputId = useId();
 	const abierto = ticket.estado === 'EN_CHAT';
+
+	/*
+	 * En el celular la lista y el chat van en una sola columna: al tocar un ticket
+	 * el chat se abria varias pantallas mas abajo y parecia que no habia pasado
+	 * nada. Ahi se lo trae a la vista. Corre al montar, y ChatPanel se monta de
+	 * nuevo con cada ticket elegido (key={ticket.id}). En escritorio el chat ya
+	 * esta al lado de la lista, asi que no se mueve nada.
+	 */
+	useEffect(() => {
+		if (!window.matchMedia('(max-width: 720px)').matches) return;
+		const suave = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		panelRef.current?.scrollIntoView({ block: 'start', behavior: suave ? 'smooth' : 'auto' });
+	}, []);
 
 	const agregar = useCallback((nuevos: ChatMensajeResponse[]) => {
 		if (nuevos.length === 0) return;
@@ -173,7 +187,7 @@ function ChatPanel({
 	}
 
 	return (
-		<section className="tarjeta chat" aria-label={`Chat del ticket ${ticket.id}`}>
+		<section ref={panelRef} className="tarjeta chat" aria-label={`Chat del ticket ${ticket.id}`}>
 			<header className="chat-cabecera">
 				<div>
 					<h2>Ticket #{ticket.id}</h2>
@@ -221,6 +235,7 @@ function ChatPanel({
 						onChange={(e) => setTexto(e.target.value)}
 						placeholder="Escribí un mensaje"
 						autoComplete="off"
+						enterKeyHint="send"
 					/>
 					<button type="submit" disabled={enviando || !texto.trim()}>
 						Enviar

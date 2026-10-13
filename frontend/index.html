@@ -3,7 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      viewport-fit=cover deja que la app llegue hasta debajo del notch y de la barra
+      de gestos del telefono; sin esto env(safe-area-inset-*) vale siempre 0 y la barra
+      de pestañas quedaria pegada al indicador de inicio del iPhone.
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- Color de la barra del navegador en el celular: la misma superficie que la nav. -->
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1f2937" media="(prefers-color-scheme: dark)" />
     <title>PeopleBikes</title>
     <!-- Fuente display (solo logo y h1; el cuerpo sigue con la del sistema). -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

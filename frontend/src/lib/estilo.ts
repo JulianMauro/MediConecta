@@ -9,6 +9,9 @@
 
 export type Opcion = { valor: string; etiqueta: string };
 
+/** Evento que se dispara en window cada vez que se aplica una preferencia. */
+export const EVENTO_CAMBIO = 'peoplebikes:estilo';
+
 /**
  * Fabrica una preferencia: leerla, aplicarla y recordarla.
  *
@@ -40,6 +43,9 @@ function crearPreferencia(atributo: string, clave: string, opciones: Opcion[]) {
 		} catch {
 			/* si no se puede guardar, el cambio igual vale para esta sesion */
 		}
+		// Puede haber mas de un boton para la misma preferencia (el flotante y el de
+		// "Mi cuenta" en el celular): se avisa para que todos muestren lo mismo.
+		window.dispatchEvent(new CustomEvent(EVENTO_CAMBIO, { detail: { atributo, valor } }));
 	}
 
 	function siguiente(valor: string): Opcion {
@@ -51,7 +57,7 @@ function crearPreferencia(atributo: string, clave: string, opciones: Opcion[]) {
 		return opciones.find((o) => o.valor === valor) ?? opciones[0];
 	}
 
-	return { opciones, leer, aplicar, siguiente, actual };
+	return { atributo, opciones, leer, aplicar, siguiente, actual };
 }
 
 /* El primero de cada lista es el predeterminado. */

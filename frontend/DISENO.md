@@ -102,3 +102,27 @@ El panel de administración es una ruta por sección en vez de las cinco apilada
 - **Tablas** con `<caption>` y `scope` en cada cabecera.
 - **Estados nunca solo por color**: los chips de anclaje suman símbolo, las notificaciones no leídas suman punto, y las cifras en cero de una estación llevan además un aviso en texto.
 - **Targets de 44px** en botones, campos y navegación; 56px en el modo bici.
+
+## Celular (hasta 720px)
+
+La escena de calle de PRODUCT.md: de pie, con una mano y a veces con sol directo. No es el escritorio achicado; las decisiones salen de cómo lo resuelven las apps de bici compartida que ya existen (Citi Bike, BA Ecobici, Bicing, Lime). Todo vive dentro de `@media (max-width: 720px)` o en elementos que en escritorio tienen `display: none`, así que **la versión de escritorio no cambia** (verificado con capturas comparadas píxel a píxel).
+
+| Pieza | Qué hace en el celular | Por qué |
+|---|---|---|
+| Barra de pestañas | Fija abajo, seis destinos con ícono y rótulo, respeta `safe-area-inset-bottom` | El pulgar llega abajo, no arriba. El rail de escritorio se oculta: nunca hay dos navegaciones a la vez |
+| Barra superior | Marca y contador en vivo (versión corta, se recorta si no entra) y el chip de Admin | Antes ocupaba ~120px y dejaba "Tickets" y "Mi cuenta" fuera de la pantalla |
+| Inicio | "Escanear el QR de la bici" es el botón principal; el código queda como alternativa debajo | El QR está pegado en el caño y la cámara ya está en la mano |
+| Mapa | El detalle de la estación sube como hoja inferior, con su X para cerrarla | La respuesta aparece donde está el pulgar, sin perder el mapa de vista |
+| Planes | Un plan debajo del otro con sus atributos y el botón al pie | La tabla pedía ~520px y obligaba a scrollear de costado |
+| Tablas (`.tabla-apilable`) | Cada fila es un bloque "rótulo — valor" (`data-label`) | Sin scroll horizontal. Llevan `role` explícitos: Safari deja de anunciar como tabla una `<table>` con otro `display` |
+| Mi cuenta | Atajos fijos a cada sección y una sección "Ajustes" con apariencia (fondo, tarjetas) y cerrar sesión | Son cinco tarjetas apiladas; y el panel flotante de estilo chocaba con las pestañas |
+| Tickets | Al elegir un ticket, el chat se trae a la vista | En una sola columna el chat se abría varias pantallas más abajo |
+| Modal | Hoja inferior a todo el ancho | Los botones quedan al alcance del pulgar y el teclado no la saca de la pantalla |
+
+Reglas que se suman a las de arriba:
+
+- **Campos a 16px como mínimo**: con menos, Safari del iPhone hace zoom al enfocarlos.
+- **Ningún botón chico**: `.boton-chico` sube a 44px en el celular.
+- **`:hover` solo con `(hover: hover)`**: en pantallas táctiles el hover quedaba "pegado" después de tocar un botón. El feedback del toque es `:active`.
+- **Teclado correcto**: `autoComplete`, `inputMode`, `autoCapitalize` y `enterKeyHint` en los campos (código de bici en mayúsculas y sin autocorrector, DNI numérico, teléfono `tel`).
+- Íconos SVG propios en `components/ui/Iconos.tsx`: grilla de 24px, trazo 1.75, siempre acompañados de texto.

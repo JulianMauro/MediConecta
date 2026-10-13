@@ -31,11 +31,24 @@ export function LoginPage() {
 				<h1>PeopleBikes</h1>
 				<label>
 					Email
-					<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+					{/* autoComplete: el telefono ofrece la cuenta guardada en vez de hacer tipear todo. */}
+					<input
+						type="email"
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
+						autoComplete="email"
+						required
+					/>
 				</label>
 				<label>
 					Password
-					<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+					<input
+						type="password"
+						value={password}
+						onChange={(e) => setPassword(e.target.value)}
+						autoComplete="current-password"
+						required
+					/>
 				</label>
 				{error && <p className="error">{error}</p>}
 				<button type="submit" disabled={enviando}>

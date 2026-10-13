@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { MapaEstaciones } from '../components/mapa/MapaEstaciones';
 import { useEstaciones } from '../hooks/useEstaciones';
 import { plural } from '../lib/plural';
+import { IconoCerrar } from '../components/ui/Iconos';
 
 /**
  * Mapa de la red.
@@ -37,7 +38,7 @@ export function MapPage() {
 
 			{error && <p className="aviso aviso-alerta">{error}</p>}
 
-			<section className="tarjeta seccion-ancha">
+			<section className="tarjeta seccion-ancha mapa-marco">
 				<MapaEstaciones
 					estaciones={estaciones}
 					seleccionadaId={seleccionadaId}
@@ -65,8 +66,22 @@ export function MapPage() {
 				</p>
 			)}
 
+			{/*
+			 * En el celular el detalle sube como hoja inferior sobre el mapa, que es como
+			 * lo muestran Citi Bike y BA Ecobici: tocás el pin y la respuesta aparece donde
+			 * esta el pulgar, sin perder el mapa de vista ni tener que scrollear para
+			 * encontrarla. En escritorio sigue siendo la tarjeta debajo del mapa.
+			 */}
 			{seleccionada && (
-				<section className="tarjeta">
+				<section className="tarjeta mapa-detalle" aria-label={`Estación ${seleccionada.nombre}`}>
+					<button
+						type="button"
+						className="modal-cerrar mapa-detalle-cerrar solo-movil"
+						onClick={() => setSeleccionadaId(null)}
+						aria-label="Cerrar el detalle de la estación"
+					>
+						<IconoCerrar />
+					</button>
 					<h2>{seleccionada.nombre}</h2>
 					<p className="estacion-direccion">{seleccionada.direccion}</p>
 					<dl className="estacion-cifras">

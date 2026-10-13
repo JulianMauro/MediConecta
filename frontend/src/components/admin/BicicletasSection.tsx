@@ -68,30 +68,31 @@ export function BicicletasSection({ refrescarSenal }: Props) {
 			</div>
 			{almacenes.length === 0 && <p className="ayuda">Creá un almacén primero: toda bici nueva necesita uno.</p>}
 
-			{/* La tabla scrollea dentro de su caja: sin esto se desborda de la tarjeta. */}
+			{/* La tabla scrollea dentro de su caja: sin esto se desborda de la tarjeta.
+			    tabla-apilable: ver PagosSection. */}
 			<div className="tabla-scroll">
-				<table className="tabla">
+				<table className="tabla tabla-apilable" role="table">
 					<caption>Bicicletas de la flota, con su estado y ubicación actual</caption>
-					<thead>
-						<tr>
-							<th scope="col">Código</th>
-							<th scope="col">Estado</th>
-							<th scope="col">Ubicación</th>
+					<thead role="rowgroup">
+						<tr role="row">
+							<th scope="col" role="columnheader">Código</th>
+							<th scope="col" role="columnheader">Estado</th>
+							<th scope="col" role="columnheader">Ubicación</th>
 						</tr>
 					</thead>
-					<tbody>
+					<tbody role="rowgroup">
 						{bicicletas.map((b) => (
-							<tr key={b.id}>
-								<td>{b.codigo}</td>
-								<td>
+							<tr role="row" key={b.id}>
+								<td role="cell" data-label="Código">{b.codigo}</td>
+								<td role="cell" data-label="Estado">
 									<span className={`pill pill-${b.estado.toLowerCase()}`}>{ESTADO_LABEL[b.estado]}</span>
 								</td>
-								<td>{b.anclajeId ? `Anclaje #${b.anclajeId}` : b.almacenId ? `Almacén #${b.almacenId}` : '-'}</td>
+								<td role="cell" data-label="Ubicación">{b.anclajeId ? `Anclaje #${b.anclajeId}` : b.almacenId ? `Almacén #${b.almacenId}` : '-'}</td>
 							</tr>
 						))}
 						{bicicletas.length === 0 && (
-							<tr>
-								<td colSpan={3} className="ayuda">
+							<tr role="row">
+								<td role="cell" colSpan={3} className="ayuda">
 									Todavía no hay bicicletas.
 								</td>
 							</tr>

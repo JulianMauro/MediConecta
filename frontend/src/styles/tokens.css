@@ -242,6 +242,9 @@
 	--ancho-angosto: 420px;
 	--alto-nav: 72px;
 	--target-min: 44px;
+	/* Celular: barra superior compacta y barra de pestañas abajo (ver index.css). */
+	--alto-barra-movil: 56px;
+	--alto-pestanas: 60px;
 
 	/* ---- Movimiento ---- */
 	--transicion: 140ms ease;

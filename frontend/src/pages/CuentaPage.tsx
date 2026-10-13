@@ -7,8 +7,25 @@ import { ViajesSection } from '../components/cuenta/ViajesSection';
 import { useSuscripcion } from '../hooks/useSuscripcion';
 import { usePagos } from '../hooks/usePagos';
 import { useStrikes } from '../hooks/useStrikes';
+import { EstiloOpciones } from '../components/ui/EstiloToggle';
+import { useAuth } from '../context/AuthContext';
+
+/**
+ * Atajos a cada seccion, solo en el celular. Ahi "Mi cuenta" son cinco tarjetas
+ * apiladas y la que se busca (casi siempre un pago pendiente) queda varias
+ * pantallas mas abajo. En escritorio la grilla ya las muestra de a dos y no hacen falta.
+ */
+const ATAJOS = [
+	{ id: 'suscripcion', label: 'Plan' },
+	{ id: 'pagos', label: 'Pagos' },
+	{ id: 'strikes', label: 'Strikes' },
+	{ id: 'notificaciones', label: 'Avisos' },
+	{ id: 'viajes', label: 'Viajes' },
+	{ id: 'ajustes', label: 'Ajustes' },
+];
 
 export function CuentaPage() {
+	const { usuario, logout } = useAuth();
 	const suscripcion = useSuscripcion();
 	const pagos = usePagos();
 	const strikes = useStrikes();
@@ -49,6 +66,13 @@ export function CuentaPage() {
 				<h1>Mi cuenta</h1>
 				<p className="bajada">Tu plan, tus pagos, tus penalizaciones y el historial de viajes.</p>
 			</header>
+			<nav className="cuenta-atajos solo-movil" aria-label="Secciones de Mi cuenta">
+				{ATAJOS.map((a) => (
+					<a key={a.id} href={`#${a.id}`}>
+						{a.label}
+					</a>
+				))}
+			</nav>
 			<div className="grilla">
 				<SuscripcionSection
 					membresias={suscripcion.membresias}
@@ -69,6 +93,31 @@ export function CuentaPage() {
 				<StrikesSection strikes={strikes.strikes} />
 				<NotificacionesSection strikes={strikes.strikes} />
 				<ViajesSection />
+				{/*
+				 * Solo en el celular: lo que en escritorio esta en la barra de arriba (Salir)
+				 * y en el panel flotante (el estilo) y en el telefono no entra. Va ultima en
+				 * la grilla a proposito: las tarjetas alternan su forma por posicion
+				 * (nth-child) y una oculta en el medio correria a las demas.
+				 */}
+				<section id="ajustes" className="tarjeta solo-movil ajustes">
+					<h2>Ajustes</h2>
+					<h3>Apariencia</h3>
+					<p className="ayuda">El fondo y el estilo de las tarjetas. Se recuerda en este teléfono.</p>
+					<EstiloOpciones />
+					<h3>Sesión</h3>
+					{usuario && (
+						<p className="ayuda">
+							Entraste como{' '}
+							<strong>
+								{usuario.nombre} {usuario.apellido}
+							</strong>{' '}
+							({usuario.email}).
+						</p>
+					)}
+					<button type="button" className="boton-secundario" onClick={logout}>
+						Cerrar sesión
+					</button>
+				</section>
 			</div>
 		</div>
 	);

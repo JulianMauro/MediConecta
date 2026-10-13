@@ -29,7 +29,7 @@ export function NotificacionesSection({ strikes }: Props) {
 	const restantes = Math.max(STRIKES_PARA_BLOQUEAR - activos, 0);
 
 	return (
-		<section className="tarjeta">
+		<section id="notificaciones" className="tarjeta">
 			<h2>Notificaciones</h2>
 			<div
 				className={`contador-strikes contador-strikes-${nivel}`}

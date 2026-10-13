@@ -20,32 +20,38 @@ export function ViajesSection() {
 	);
 
 	return (
-		<section className="tarjeta">
+		<section id="viajes" className="tarjeta">
 			<h2>Historial de viajes</h2>
-			{/* La tabla scrollea dentro de su caja: sin esto se desborda de la tarjeta. */}
+			{/*
+			 * La tabla scrollea dentro de su caja: sin esto se desborda de la tarjeta.
+			 *
+			 * tabla-apilable: ver PagosSection.
+			 */}
 			<div className="tabla-scroll">
-				<table className="tabla">
+				<table className="tabla tabla-apilable" role="table">
 					<caption>Historial de tus viajes, del más reciente al más antiguo</caption>
-					<thead>
-						<tr>
-							<th scope="col">Bici</th>
-							<th scope="col">Inicio</th>
-							<th scope="col">Duración</th>
-							<th scope="col">Excedió</th>
+					<thead role="rowgroup">
+						<tr role="row">
+							<th scope="col" role="columnheader">Bici</th>
+							<th scope="col" role="columnheader">Inicio</th>
+							<th scope="col" role="columnheader">Duración</th>
+							<th scope="col" role="columnheader">Excedió</th>
 						</tr>
 					</thead>
-					<tbody>
+					<tbody role="rowgroup">
 						{ordenados.map((v) => (
-							<tr key={v.id}>
-								<td>{v.codigoBicicleta}</td>
-								<td>{new Date(v.fechaInicio).toLocaleString()}</td>
-								<td>{v.fechaFin ? `${v.duracionMinutos} min` : 'en curso'}</td>
-								<td className={v.excedioTiempo ? 'texto-alerta' : ''}>{v.excedioTiempo ? 'sí' : 'no'}</td>
+							<tr role="row" key={v.id}>
+								<td role="cell" data-label="Bici">{v.codigoBicicleta}</td>
+								<td role="cell" data-label="Inicio">{new Date(v.fechaInicio).toLocaleString()}</td>
+								<td role="cell" data-label="Duración">{v.fechaFin ? `${v.duracionMinutos} min` : 'en curso'}</td>
+								<td role="cell" data-label="Excedió" className={v.excedioTiempo ? 'texto-alerta' : ''}>
+									{v.excedioTiempo ? 'sí' : 'no'}
+								</td>
 							</tr>
 						))}
 						{viajes.length === 0 && (
-							<tr>
-								<td colSpan={4} className="tabla-vacia">
+							<tr role="row">
+								<td role="cell" colSpan={4} className="tabla-vacia">
 									Todavía no hiciste ningún viaje. Desbloqueá una bici desde Inicio para empezar el primero.
 								</td>
 							</tr>

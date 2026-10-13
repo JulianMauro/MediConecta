@@ -69,7 +69,7 @@ export function SuscripcionSection({
 	 * grilla no entra y aparece un scroll horizontal dentro de la tarjeta.
 	 */
 	return (
-		<section className="tarjeta seccion-ancha">
+		<section id="suscripcion" className="tarjeta seccion-ancha">
 			<h2>Suscripción</h2>
 			<p className="ayuda">
 				Sin un plan vigente no podés sacar una bici. Un plan te da minutos por viaje, una cantidad de viajes por día, y
@@ -96,31 +96,32 @@ export function SuscripcionSection({
 			)}
 
 			{suscripciones.length > 0 && (
+				// tabla-apilable: ver PagosSection.
 				<div className="tabla-scroll">
-					<table className="tabla">
+					<table className="tabla tabla-apilable" role="table">
 						<caption>
 							Historial de suscripciones — {enPantalla.length} de {ordenadas.length}, de la más reciente a la
 							más vieja
 						</caption>
-						<thead>
-							<tr>
-								<th scope="col">Plan</th>
-								<th scope="col">Estado</th>
-								<th scope="col">Desde</th>
-								<th scope="col">Hasta</th>
-								<th scope="col">
+						<thead role="rowgroup">
+							<tr role="row">
+								<th scope="col" role="columnheader">Plan</th>
+								<th scope="col" role="columnheader">Estado</th>
+								<th scope="col" role="columnheader">Desde</th>
+								<th scope="col" role="columnheader">Hasta</th>
+								<th scope="col" role="columnheader">
 									<span className="solo-lectores">Acciones</span>
 								</th>
 							</tr>
 						</thead>
-						<tbody>
+						<tbody role="rowgroup">
 							{enPantalla.map((s) => (
-								<tr key={s.id}>
-									<th scope="row">{nombrePlan(s.membresiaId)}</th>
-									<td>{ESTADO_LABEL[s.estado]}</td>
-									<td>{new Date(s.fechaInicio).toLocaleDateString()}</td>
-									<td>{s.fechaFin ? new Date(s.fechaFin).toLocaleString() : '-'}</td>
-									<td>
+								<tr role="row" key={s.id}>
+									<th scope="row" role="rowheader">{nombrePlan(s.membresiaId)}</th>
+									<td role="cell" data-label="Estado">{ESTADO_LABEL[s.estado]}</td>
+									<td role="cell" data-label="Desde">{new Date(s.fechaInicio).toLocaleDateString()}</td>
+									<td role="cell" data-label="Hasta">{s.fechaFin ? new Date(s.fechaFin).toLocaleString() : '-'}</td>
+									<td role="cell" className="tabla-acciones">
 										{s.estado === 'ACTIVA' && (
 											<button type="button" className="boton-secundario boton-chico" onClick={() => cancelar(s.id)}>
 												Cancelar

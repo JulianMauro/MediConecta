@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { viajesApi } from '../../api/viajes';
 import { ApiError } from '../../api/client';
 import type { ViajeResponse } from '../../types/dto';
+import { IconoEscanear } from '../ui/Iconos';
 
 // El lector de QR arrastra ~500 kB (zxing). El uso real es un teléfono en la
 // calle: no se descarga hasta que el usuario toca "Escanear".
@@ -60,16 +61,46 @@ export function UnlockForm({ onDesbloqueada }: Props) {
 	}
 
 	return (
-		<form className="tarjeta formulario" onSubmit={onSubmit}>
+		<form className="tarjeta formulario formulario-desbloqueo" onSubmit={onSubmit}>
 			<h2>Desbloquear bici</h2>
 			<p>Ingresá el código que tiene la bici, o escaneá su QR, para empezar tu viaje.</p>
+			{/*
+			 * En el celular escanear es LA accion, como en Citi Bike, Lime o BA Ecobici:
+			 * la camara ya esta en la mano y el QR pegado en el caño. Tipear el codigo
+			 * queda como alternativa debajo. En escritorio no se ve: ahi sigue el boton
+			 * chico al lado del campo, que es el que tiene sentido con una webcam.
+			 */}
+			<button
+				type="button"
+				className="boton-escanear solo-movil"
+				onClick={() => setEscaneando((v) => !v)}
+				aria-expanded={escaneando}
+			>
+				<IconoEscanear />
+				{escaneando ? 'Cerrar la cámara' : 'Escanear el QR de la bici'}
+			</button>
+			<p className="separador-o solo-movil" aria-hidden="true">
+				o ingresá el código
+			</p>
 			<label>
 				Código de la bici
 				<div className="fila-codigo">
-					<input value={codigo} onChange={(e) => setCodigo(e.target.value)} placeholder="BICI-001" required />
+					{/* Atributos para el teclado del telefono: mayusculas, sin autocorrector
+					    (que convierte BICI en "Bicicleta") y la tecla de enviar dice "Ir". */}
+					<input
+						value={codigo}
+						onChange={(e) => setCodigo(e.target.value)}
+						placeholder="BICI-001"
+						required
+						autoComplete="off"
+						autoCapitalize="characters"
+						autoCorrect="off"
+						spellCheck={false}
+						enterKeyHint="go"
+					/>
 					<button
 						type="button"
-						className="boton-secundario"
+						className="boton-secundario solo-escritorio"
 						onClick={() => setEscaneando((v) => !v)}
 						aria-expanded={escaneando}
 					>

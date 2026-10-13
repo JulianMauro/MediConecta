@@ -72,37 +72,38 @@ export function MembresiasSection() {
 				<button onClick={abrirCrear}>+ Nueva membresía</button>
 			</div>
 
-			{/* La tabla scrollea dentro de su caja: sin esto se desborda de la tarjeta. */}
+			{/* La tabla scrollea dentro de su caja: sin esto se desborda de la tarjeta.
+			    tabla-apilable: ver PagosSection. */}
 			<div className="tabla-scroll">
-				<table className="tabla">
+				<table className="tabla tabla-apilable" role="table">
 					<caption>Planes de membresía configurados en el sistema</caption>
-					<thead>
-						<tr>
-							<th scope="col">Nombre</th>
-							<th scope="col">Tipo</th>
-							<th scope="col">Dura</th>
-							<th scope="col">Min./viaje</th>
-							<th scope="col">Viajes/día</th>
-							<th scope="col">Espera</th>
-							<th scope="col">Precio</th>
-							<th scope="col">$/min extra</th>
-							<th scope="col">Activa</th>
-							<th scope="col"><span className="solo-lectores">Acciones</span></th>
+					<thead role="rowgroup">
+						<tr role="row">
+							<th scope="col" role="columnheader">Nombre</th>
+							<th scope="col" role="columnheader">Tipo</th>
+							<th scope="col" role="columnheader">Dura</th>
+							<th scope="col" role="columnheader">Min./viaje</th>
+							<th scope="col" role="columnheader">Viajes/día</th>
+							<th scope="col" role="columnheader">Espera</th>
+							<th scope="col" role="columnheader">Precio</th>
+							<th scope="col" role="columnheader">$/min extra</th>
+							<th scope="col" role="columnheader">Activa</th>
+							<th scope="col" role="columnheader"><span className="solo-lectores">Acciones</span></th>
 						</tr>
 					</thead>
-					<tbody>
+					<tbody role="rowgroup">
 						{membresias.map((m) => (
-							<tr key={m.id}>
-								<td>{m.nombre}</td>
-								<td>{m.tipo}</td>
-								<td>{m.duracionDias} día(s)</td>
-								<td>{m.tiempoPermitidoMinutos}</td>
-								<td>{m.viajesPorDia}</td>
-								<td>{m.tiempoEsperaMinutos} min</td>
-								<td>${m.precio}</td>
-								<td>${m.tarifaMinutoExtra}</td>
-								<td>{m.activa ? 'sí' : 'no'}</td>
-								<td>
+							<tr role="row" key={m.id}>
+								<td role="cell" data-label="Nombre">{m.nombre}</td>
+								<td role="cell" data-label="Tipo">{m.tipo}</td>
+								<td role="cell" data-label="Dura">{m.duracionDias} día(s)</td>
+								<td role="cell" data-label="Min./viaje">{m.tiempoPermitidoMinutos}</td>
+								<td role="cell" data-label="Viajes/día">{m.viajesPorDia}</td>
+								<td role="cell" data-label="Espera">{m.tiempoEsperaMinutos} min</td>
+								<td role="cell" data-label="Precio">${m.precio}</td>
+								<td role="cell" data-label="$/min extra">${m.tarifaMinutoExtra}</td>
+								<td role="cell" data-label="Activa">{m.activa ? 'sí' : 'no'}</td>
+								<td role="cell" className="tabla-acciones">
 									{m.activa && (
 										<button className="boton-chico" onClick={() => desactivar(m.id)}>
 											Desactivar
@@ -112,8 +113,8 @@ export function MembresiasSection() {
 							</tr>
 						))}
 						{membresias.length === 0 && (
-							<tr>
-								<td colSpan={10} className="ayuda">
+							<tr role="row">
+								<td role="cell" colSpan={10} className="ayuda">
 									Todavía no hay membresías.
 								</td>
 							</tr>

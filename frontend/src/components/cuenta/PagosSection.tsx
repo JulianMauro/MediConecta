@@ -8,8 +8,13 @@ interface Props {
 }
 
 export function PagosSection({ pagos, error, confirmar, rechazar }: Props) {
+	/*
+	 * seccion-ancha: con media grilla las fechas partian en tres lineas y los
+	 * botones de Pagar y Rechazar quedaban cortados fuera de la tarjeta. Es ademas
+	 * la seccion con algo para hacer: merece la fila entera.
+	 */
 	return (
-		<section id="pagos" className="tarjeta">
+		<section id="pagos" className="tarjeta seccion-ancha">
 			<h2>Pagos</h2>
 			{error && <p className="error">{error}</p>}
 			{/*

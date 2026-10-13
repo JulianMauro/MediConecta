@@ -52,9 +52,10 @@ function BotonEstilo({ preferencia, titulo }: { preferencia: Preferencia; titulo
 export function EstiloToggle() {
 	const { usuario } = useAuth();
 	/*
-	 * Con sesion, en el celular el panel flotante chocaria con la barra de pestañas
-	 * y taparia contenido: ahi se oculta (ver index.css) y las mismas dos opciones
-	 * pasan a "Mi cuenta", que es donde una app de telefono guarda su apariencia.
+	 * Con sesion el panel flotante se oculta (ver index.css): tapaba contenido, y
+	 * en el celular ademas chocaba con la barra de pestañas. Las mismas dos
+	 * opciones estan en "Mi cuenta" > Ajustes, que es donde una app guarda su
+	 * apariencia. Sin sesion sigue flotando: el login es donde mas se ve el fondo.
 	 */
 	return (
 		<div className={usuario ? 'estilo-toggle estilo-toggle-con-sesion' : 'estilo-toggle'}>

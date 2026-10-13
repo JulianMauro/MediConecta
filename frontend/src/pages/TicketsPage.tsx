@@ -126,7 +126,7 @@ function ChatPanel({
 	const [texto, setTexto] = useState('');
 	const [error, setError] = useState<string | null>(null);
 	const [enviando, setEnviando] = useState(false);
-	const finRef = useRef<HTMLDivElement>(null);
+	const mensajesRef = useRef<HTMLDivElement>(null);
 	const panelRef = useRef<HTMLElement>(null);
 	const inputId = useId();
 	const abierto = ticket.estado === 'EN_CHAT';
@@ -166,8 +166,14 @@ function ChatPanel({
 		abierto,
 	);
 
+	/*
+	 * Al ultimo mensaje se llega moviendo SOLO la caja del chat. Antes era un
+	 * scrollIntoView sobre el final de la lista, y ese mueve tambien la pagina:
+	 * al abrir un ticket o al llegar un mensaje, toda la pantalla saltaba.
+	 */
 	useEffect(() => {
-		finRef.current?.scrollIntoView({ block: 'nearest' });
+		const caja = mensajesRef.current;
+		if (caja) caja.scrollTop = caja.scrollHeight;
 	}, [mensajes.length]);
 
 	async function enviar(e: FormEvent) {
@@ -198,7 +204,7 @@ function ChatPanel({
 				<EstadoPill estado={ticket.estado} />
 			</header>
 
-			<div className="chat-mensajes" role="log" aria-live="polite">
+			<div ref={mensajesRef} className="chat-mensajes" role="log" aria-live="polite">
 				{mensajes.length === 0 && (
 					<p className="ayuda centrado">
 						{ticket.estado === 'ABIERTO'
@@ -218,7 +224,6 @@ function ChatPanel({
 						</div>
 					);
 				})}
-				<div ref={finRef} />
 			</div>
 
 			{error && <p className="aviso aviso-alerta">{error}</p>}

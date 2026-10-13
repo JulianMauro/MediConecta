@@ -447,6 +447,11 @@ body::after {
 	gap: var(--e-2);
 }
 
+/* Con sesion el panel de estilo vive en "Mi cuenta" > Ajustes (ver EstiloToggle.tsx). */
+.estilo-toggle-con-sesion {
+	display: none;
+}
+
 .estilo-toggle button {
 	border-radius: var(--radio-pill);
 	padding: var(--e-2) var(--e-4);
@@ -1517,11 +1522,37 @@ label {
 	flex-shrink: 0;
 }
 
+/* ---- Ajustes de Mi cuenta: apariencia y sesion ---- */
+
+.ajustes h3 {
+	margin-top: var(--e-5);
+}
+
+.ajustes h3:first-of-type {
+	margin-top: 0;
+}
+
+.ajustes > .boton-secundario {
+	width: 100%;
+}
+
+.estilo-opciones {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--e-2);
+}
+
+.estilo-opciones button {
+	flex: 1 1 10rem;
+}
+
 .subpanel {
 	margin-top: var(--e-3);
 	padding: var(--e-4);
 	border-radius: var(--radio);
-	border-left: 4px solid var(--decorativo);
+	/* Borde fino completo: la franja de 4px a la izquierda era un adorno que no
+	   decia nada. El fondo de acento ya lo separa de la fila de arriba. */
+	border: 1px solid var(--borde);
 	background: var(--superficie-2);
 }
 
@@ -1537,10 +1568,13 @@ label {
    Avisos y estados
    ========================================================================== */
 
+/*
+ * Bloque y no flex: como flex, cada pedazo de texto y cada link quedaban como
+ * columnas separadas ("desde  Mi cuenta  ." con huecos, o partido en dos en el
+ * celular). Ningun aviso lleva icono, asi que el flex no aportaba nada.
+ */
 .aviso {
-	display: flex;
-	align-items: flex-start;
-	gap: var(--e-2);
+	display: block;
 	padding: var(--e-3) var(--e-4);
 	border-radius: var(--forma-control);
 	font-size: var(--txt-chico);
@@ -1641,6 +1675,115 @@ label {
 
 .mapa-barra .ayuda {
 	margin: 0;
+}
+
+/* ---- Mapa con panel ---- */
+
+.mapa-layout {
+	display: flex;
+	flex-direction: column;
+	gap: var(--e-4);
+}
+
+.mapa-panel {
+	display: flex;
+	flex-direction: column;
+	gap: var(--e-4);
+	min-width: 0;
+}
+
+/* La barra (conteo + Actualizar) va dentro de la tarjeta de la lista: suelta,
+   el texto del conteo caia sobre el fondo de rayas. */
+.mapa-lista .mapa-barra {
+	margin: 0;
+}
+
+.mapa-lista .mapa-barra h2 {
+	flex: 1;
+	margin: 0;
+}
+
+.mapa-lista .mapa-barra .boton-chico {
+	margin-left: 0;
+}
+
+.mapa-lista .aviso {
+	margin: var(--e-3) 0 0;
+}
+
+.mapa-sin-seleccion {
+	margin: 0;
+	text-align: center;
+}
+
+.mapa-lista-items {
+	list-style: none;
+	margin: var(--e-3) 0 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--e-1);
+	max-height: 22rem;
+	overflow-y: auto;
+}
+
+.mapa-lista-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: var(--e-3);
+	width: 100%;
+	padding: calc(var(--e-2) - 1.5px) calc(var(--e-3) - 1.5px);
+	border: 1.5px solid transparent;
+	border-radius: var(--forma-control);
+	background: none;
+	color: var(--texto);
+	font-weight: 500;
+	text-align: left;
+	white-space: normal;
+}
+
+/* :not(:disabled) para ganarle al hover generico de button (ver .fila-clickeable). */
+@media (hover: hover) {
+	.mapa-lista-item:hover:not(:disabled) {
+		background: var(--superficie-2);
+		filter: none;
+		box-shadow: none;
+	}
+}
+
+/* La elegida, con la misma pieza que la seccion activa del admin y la pestaña activa. */
+.mapa-lista-item[aria-pressed='true'],
+.mapa-lista-item[aria-pressed='true']:hover:not(:disabled) {
+	background:
+		linear-gradient(var(--acento-suave), var(--acento-suave)) padding-box,
+		conic-gradient(
+				from var(--angulo),
+				var(--marca-500),
+				var(--acido-cian),
+				var(--acido-lima),
+				var(--acido-magenta),
+				var(--marca-500)
+			)
+			border-box;
+}
+
+.mapa-lista-nombre {
+	font-weight: 600;
+	color: var(--texto-fuerte);
+}
+
+.mapa-lista-cifras {
+	flex-shrink: 0;
+	font-size: var(--txt-micro);
+	color: var(--texto-suave);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+/* --texto-suave no llega a 4.5:1 sobre la superficie de acento. */
+.mapa-lista-item[aria-pressed='true'] .mapa-lista-cifras {
+	color: var(--texto-suave-en-acento);
 }
 
 /* ==========================================================================
@@ -1789,10 +1932,17 @@ label {
 	border-radius: var(--radio);
 }
 
+/*
+ * :not(:disabled) no es decorativo: el hover generico de button lo lleva, y sin
+ * igualarle la especificidad le ganaba a este. La fila se pintaba con el violeta
+ * del boton primario girado de tono, y el texto oscuro encima no se leia.
+ */
 @media (hover: hover) {
-	.fila-clickeable:hover {
+	.fila-clickeable:hover:not(:disabled) {
 		background: var(--superficie-2);
 		border-color: var(--decorativo);
+		filter: none;
+		box-shadow: none;
 	}
 }
 
@@ -2137,8 +2287,14 @@ label {
 
 /* ---- Comparativa de planes ---- */
 
-/* Las tablas anchas scrollean dentro de su caja, nunca empujan el ancho de la pagina. */
+/*
+ * Las tablas anchas scrollean dentro de su caja, nunca empujan el ancho de la pagina.
+ * position: relative hace falta para eso: el texto .solo-lectores de los encabezados
+ * es absolute, y sin un ancestro posicionado escapaba del scroll y estiraba la pagina
+ * (Membresias de admin desbordaba la ventana entre 760 y 1100px).
+ */
 .tabla-scroll {
+	position: relative;
 	overflow-x: auto;
 	margin-bottom: var(--e-4);
 }
@@ -2193,9 +2349,13 @@ label {
  * quedan directamente sobre ese fondo (no dentro de una .tarjeta), así que llevan
  * su propia superficie.
  */
+/*
+ * Ocupa el ancho del contenido, como las tarjetas de abajo: con 62ch quedaba un
+ * rotulo corto a la izquierda y un hueco de fondo a la derecha, y su borde no
+ * coincidia con el de nada. La medida de lectura la conserva la bajada.
+ */
 .encabezado-pagina {
 	margin-bottom: var(--e-6);
-	max-width: 62ch;
 	border: 2px solid transparent;
 	border-radius: var(--forma-panel);
 	padding: calc(var(--e-5) - 2px) calc(var(--e-6) - 2px);
@@ -2223,6 +2383,30 @@ label {
 	font-size: 1.125rem;
 	color: var(--texto-suave);
 	margin: 0;
+	max-width: 62ch;
+}
+
+/* Encabezado con el dato de toda la pagina al costado (Estaciones). */
+.encabezado-con-resumen {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: var(--e-3) var(--e-6);
+}
+
+/* El texto cede ancho (la bajada vuelve a partir) antes que el resumen baje de fila. */
+.encabezado-con-resumen > div {
+	flex: 1 1 20rem;
+}
+
+.encabezado-pagina .resumen-red {
+	flex: 0 1 auto;
+	margin: 0;
+	padding: 0;
+	background: none;
+	box-shadow: none;
+	border-radius: 0;
 }
 
 .bloque-explicativo {
@@ -2441,9 +2625,30 @@ label {
 	font-variant-numeric: tabular-nums;
 }
 
+/*
+ * Barra de herramientas de Estaciones: busqueda, filtro, recarga y conteo sobre
+ * una misma superficie. Sueltos, el rotulo del buscador caia sobre el fondo de
+ * rayas y no se leia, y cada pieza flotaba como una pastilla aparte.
+ */
 .filtros {
 	align-items: flex-end;
 	gap: var(--e-3);
+	padding: var(--e-3) var(--e-4);
+	background: var(--superficie);
+	border-radius: var(--forma-tarjeta);
+	box-shadow: var(--elev-2);
+}
+
+/* Dentro de la barra el filtro ya tiene superficie: lleva borde, no sombra propia. */
+.filtros .check {
+	box-shadow: none;
+	border: 1px solid var(--borde);
+	padding: var(--e-2) var(--e-3);
+}
+
+.filtros-cuenta {
+	margin: 0 0 0 auto;
+	align-self: center;
 }
 
 .campo-inline {
@@ -2517,6 +2722,14 @@ label {
 	grid-template-columns: repeat(3, 1fr);
 	gap: var(--e-3);
 	margin: 0;
+}
+
+/* Cuando "Lugares para devolver" ocupa dos lineas los numeros quedaban
+   escalonados: cada columna empuja su cifra al pie, asi las tres se alinean. */
+.estacion-cifras > div {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
 }
 
 .estacion-cifras dt {
@@ -2612,9 +2825,12 @@ label {
 	justify-content: center;
 }
 
-.modal-cerrar:hover {
+/* :not(:disabled) para ganarle al hover generico de button: ver .fila-clickeable. */
+.modal-cerrar:hover:not(:disabled) {
 	background: var(--superficie-2);
 	color: var(--texto-fuerte);
+	filter: none;
+	box-shadow: none;
 }
 
 .modal-contenido {
@@ -2791,6 +3007,24 @@ label {
 	cursor: default;
 }
 
+/*
+ * El item entero es un boton "desarmado" (all: unset), pero el hover generico de
+ * button le volvia a poner el fondo violeta girado de tono: el ticket se pintaba
+ * de rosa saturado y el texto dejaba de leerse. El hover lo marca el borde del
+ * item, igual que la fila elegida.
+ */
+@media (hover: hover) {
+	.ticket-item-boton:hover:not(:disabled) {
+		background: none;
+		filter: none;
+		box-shadow: none;
+	}
+
+	.ticket-item:has(.ticket-item-boton:hover:not(:disabled)) {
+		border-color: var(--decorativo);
+	}
+}
+
 .ticket-item-boton:focus-visible {
 	outline: 2px solid var(--acento);
 	outline-offset: 2px;
@@ -2907,6 +3141,98 @@ label {
 
 .pill-categoria {
 	align-self: flex-start;
+}
+
+/* ==========================================================================
+   Escritorio (mas de 720px)
+   ==========================================================================
+   Composicion para pantalla ancha. Cada regla corrige algo que en escritorio
+   se veia mal; ninguna toca la escena del celular, que esta mas abajo.
+   ========================================================================== */
+
+@media not all and (max-width: 720px) {
+	/*
+	 * Inicio y login: la tarjeta en el centro de la pantalla y no pegada arriba,
+	 * con tres cuartos de la ventana vacios debajo. Es una pantalla de una sola
+	 * tarea, y centrada se lee asi. min-height y no height: si el viaje en curso
+	 * es mas alto que la ventana, la pagina crece en vez de recortarlo.
+	 */
+	.pantalla-centrada {
+		min-height: 100dvh;
+		align-items: center;
+	}
+
+	/* Con sesion la nav ocupa su alto arriba: se centra en lo que queda. */
+	.nav ~ main .pantalla-centrada {
+		min-height: calc(100dvh - var(--alto-nav));
+	}
+
+	/*
+	 * Tarjetas de una misma fila con el mismo alto: con "start" cada una media
+	 * lo suyo y las filas quedaban serruchadas, con fondo asomando entre medio.
+	 */
+	.grilla {
+		align-items: stretch;
+	}
+
+	/*
+	 * Estaciones de a tres. Con minimo de 380px entraban dos de ~540px y la
+	 * tarjeta, que tiene poco contenido, quedaba estirada y con las cifras lejos.
+	 * auto-fill y no auto-fit: con una o dos estaciones no se estiran a lo ancho.
+	 */
+	.grilla.lista-estaciones {
+		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+	}
+
+	/* El boton de anclajes al pie, a la misma altura en toda la fila. */
+	.estacion-card > .boton-chico {
+		margin-top: auto;
+	}
+
+	/* Mapa a la izquierda, panel de detalle y lista a la derecha. */
+	.mapa-layout {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
+		gap: var(--e-5);
+		align-items: start;
+	}
+
+	/* Titulo y Actualizar en la primera fila; el conteo debajo del titulo. En el
+	   ancho del panel los tres en fila no entraban y el boton caia solo abajo. */
+	.mapa-lista .mapa-barra {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas:
+			'titulo boton'
+			'cuenta cuenta';
+		align-items: center;
+		gap: 0 var(--e-3);
+	}
+
+	.mapa-lista .mapa-barra h2 {
+		grid-area: titulo;
+	}
+
+	.mapa-lista .mapa-barra .ayuda {
+		grid-area: cuenta;
+	}
+
+	.mapa-lista .mapa-barra .boton-chico {
+		grid-area: boton;
+	}
+}
+
+/*
+ * Tickets en dos columnas (mas de 900px): el chat queda fijo al costado mientras
+ * se recorre la lista, en vez de irse para arriba con el scroll. El :root[data-tarjeta]
+ * le gana al modo ticket, que tambien posiciona las tarjetas.
+ */
+@media not all and (max-width: 900px) {
+	.tickets-layout > .chat,
+	:root[data-tarjeta] .tickets-layout > .chat {
+		position: sticky;
+		top: calc(var(--alto-nav) + var(--e-4));
+	}
 }
 
 /* ==========================================================================
@@ -3135,11 +3461,6 @@ label {
 		padding-bottom: calc(var(--alto-pestanas) + env(safe-area-inset-bottom));
 	}
 
-	/* Con sesion el panel de estilo vive en "Mi cuenta" (ver EstiloToggle.tsx). */
-	.estilo-toggle-con-sesion {
-		display: none;
-	}
-
 	/* Ya no hay panel flotante que esquivar: alcanza con el respiro normal. */
 	.nav ~ main .contenido,
 	.nav ~ main .pantalla-centrada {
@@ -3195,11 +3516,6 @@ label {
 	.bajada {
 		font-size: var(--txt-chico);
 		line-height: 1.45;
-	}
-
-	/* El aviso era flex y un link adentro quedaba como columna aparte, partido en dos. */
-	.aviso {
-		display: block;
 	}
 
 	.formulario-2col,
@@ -3351,47 +3667,32 @@ label {
 
 	/* ---- Estaciones ---- */
 
-	/*
-	 * Buscador a todo el ancho; el filtro y "Actualizar" comparten la fila de abajo.
-	 * Todo junto sobre una superficie: el rotulo "Buscar estación" caia directo
-	 * sobre el fondo de rayas y no se leia (la misma regla de .encabezado-pagina).
-	 */
+	/* Buscador a todo el ancho; el filtro y "Actualizar" comparten la fila de abajo. */
 	.filtros {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) auto;
 		gap: var(--e-2);
 		align-items: stretch;
 		padding: var(--e-3);
-		background: var(--superficie);
-		border-radius: var(--forma-tarjeta);
-		box-shadow: var(--elev-2);
 	}
 
-	.filtros .campo-inline {
+	.filtros .campo-inline,
+	.filtros .filtros-cuenta {
 		grid-column: 1 / -1;
+	}
+
+	.filtros .filtros-cuenta {
+		margin: 0;
 	}
 
 	.check {
 		font-size: var(--txt-chico);
 	}
 
-	.filtros .check {
-		box-shadow: none;
-		border: 1px solid var(--borde);
-		padding: var(--e-2) var(--e-3);
-	}
-
 	.cifra {
 		font-size: 1.5rem;
 	}
 
-	/* En angosto "Lugares para devolver" ocupa dos lineas y los numeros quedaban
-	   escalonados: cada columna empuja su cifra al pie, asi las tres se alinean. */
-	.estacion-cifras > div {
-		display: flex;
-		flex-direction: column;
-		justify-content: space-between;
-	}
 
 	/* ---- Planes: un plan debajo del otro ---- */
 
@@ -3610,28 +3911,6 @@ label {
 	/* Al saltar a una seccion, su titulo queda debajo de los atajos y no tapado. */
 	.grilla > section[id] {
 		scroll-margin-top: calc(var(--target-min) + var(--e-5));
-	}
-
-	.ajustes h3 {
-		margin-top: var(--e-4);
-	}
-
-	.ajustes h3:first-of-type {
-		margin-top: 0;
-	}
-
-	.ajustes > .boton-secundario {
-		width: 100%;
-	}
-
-	.estilo-opciones {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--e-2);
-	}
-
-	.estilo-opciones button {
-		flex: 1 1 10rem;
 	}
 
 	/* El boton baja debajo del texto cuando no entran los dos en la fila. */

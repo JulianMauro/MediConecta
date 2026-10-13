@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useGoogleMaps } from '../../hooks/useGoogleMaps';
 import type { EstacionConDisponibilidad } from '../../hooks/useEstaciones';
 
@@ -109,7 +110,11 @@ export function MapaEstaciones({ estaciones, seleccionadaId, onSeleccionar }: Pr
 				<p className="aviso aviso-alerta">
 					Falta configurar <code>VITE_GOOGLE_MAPS_API_KEY</code> en <code>frontend/.env</code> para ver el mapa.
 				</p>
-				<p className="ayuda">Mientras tanto, el listado de abajo funciona igual.</p>
+				{/* "El listado de abajo" ya no era cierto en ningun tamaño: en escritorio la
+				    lista esta al costado y en el celular no hay. Se apunta a la que siempre esta. */}
+				<p className="ayuda">
+					Mientras tanto, la disponibilidad de cada estación está en <Link to="/estaciones">Estaciones</Link>.
+				</p>
 			</div>
 		);
 	}

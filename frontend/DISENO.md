@@ -105,7 +105,7 @@ El panel de administración es una ruta por sección en vez de las cinco apilada
 
 ## Celular (hasta 720px)
 
-La escena de calle de PRODUCT.md: de pie, con una mano y a veces con sol directo. No es el escritorio achicado; las decisiones salen de cómo lo resuelven las apps de bici compartida que ya existen (Citi Bike, BA Ecobici, Bicing, Lime). Todo vive dentro de `@media (max-width: 720px)` o en elementos que en escritorio tienen `display: none`, así que **la versión de escritorio no cambia** (verificado con capturas comparadas píxel a píxel).
+La escena de calle de PRODUCT.md: de pie, con una mano y a veces con sol directo. No es el escritorio achicado; las decisiones salen de cómo lo resuelven las apps de bici compartida que ya existen (Citi Bike, BA Ecobici, Bicing, Lime). Todo vive dentro de `@media (max-width: 720px)` o en elementos que en escritorio tienen `display: none`: lo que se haga acá no toca el escritorio, y al revés (ver la sección siguiente).
 
 | Pieza | Qué hace en el celular | Por qué |
 |---|---|---|
@@ -115,7 +115,7 @@ La escena de calle de PRODUCT.md: de pie, con una mano y a veces con sol directo
 | Mapa | El detalle de la estación sube como hoja inferior, con su X para cerrarla | La respuesta aparece donde está el pulgar, sin perder el mapa de vista |
 | Planes | Un plan debajo del otro con sus atributos y el botón al pie | La tabla pedía ~520px y obligaba a scrollear de costado |
 | Tablas (`.tabla-apilable`) | Cada fila es un bloque "rótulo — valor" (`data-label`) | Sin scroll horizontal. Llevan `role` explícitos: Safari deja de anunciar como tabla una `<table>` con otro `display` |
-| Mi cuenta | Atajos fijos a cada sección y una sección "Ajustes" con apariencia (fondo, tarjetas) y cerrar sesión | Son cinco tarjetas apiladas; y el panel flotante de estilo chocaba con las pestañas |
+| Mi cuenta | Atajos fijos a cada sección | Son seis tarjetas apiladas y la que se busca (casi siempre un pago pendiente) queda varias pantallas más abajo |
 | Tickets | Al elegir un ticket, el chat se trae a la vista | En una sola columna el chat se abría varias pantallas más abajo |
 | Modal | Hoja inferior a todo el ancho | Los botones quedan al alcance del pulgar y el teclado no la saca de la pantalla |
 
@@ -126,3 +126,24 @@ Reglas que se suman a las de arriba:
 - **`:hover` solo con `(hover: hover)`**: en pantallas táctiles el hover quedaba "pegado" después de tocar un botón. El feedback del toque es `:active`.
 - **Teclado correcto**: `autoComplete`, `inputMode`, `autoCapitalize` y `enterKeyHint` en los campos (código de bici en mayúsculas y sin autocorrector, DNI numérico, teléfono `tel`).
 - Íconos SVG propios en `components/ui/Iconos.tsx`: grilla de 24px, trazo 1.75, siempre acompañados de texto.
+
+## Escritorio (más de 720px)
+
+Composición para pantalla ancha, dentro de `@media not all and (max-width: 720px)`. Cada decisión corrige algo que se veía mal:
+
+| Pieza | Qué hace | Por qué |
+|---|---|---|
+| Encabezado de página | Ocupa el ancho del contenido; la bajada conserva la medida de 62ch | Con 62ch era un rótulo corto con un hueco de fondo al lado, y su borde no coincidía con el de nada |
+| Inicio y login | La tarjeta centrada en la ventana | Pegada arriba dejaba tres cuartos de la pantalla vacíos |
+| Estaciones | Resumen de la red en el encabezado; búsqueda, filtro, recarga y conteo en una sola barra; grilla de a tres con filas del mismo alto | El rótulo del buscador caía sobre el fondo de rayas, y en dos columnas las tarjetas quedaban estiradas |
+| Mapa | Mapa a la izquierda; a la derecha el detalle de la estación y la lista de la red, que también selecciona y centra el mapa | El detalle aparecía debajo del mapa, fuera de la vista |
+| Mi cuenta | Pagos a la fila entera; filas de tarjetas del mismo alto; "Ajustes" con apariencia y cerrar sesión | En media columna los botones de Pagar y Rechazar quedaban cortados |
+| Panel de estilo | Con sesión ya no flota: está en Mi cuenta > Ajustes (en celular y escritorio). Sin sesión sigue flotando | Tapaba contenido, por ejemplo el botón de contratar el último plan |
+| Tickets | El chat queda fijo al costado; al llegar un mensaje solo se mueve la caja del chat | Antes toda la página saltaba al abrir un ticket |
+
+Correcciones que valen en todos los tamaños:
+
+- **Hovers que se pisaban**: `.fila-clickeable`, `.ticket-item-boton` y `.modal-cerrar` tienen su propio hover con `:not(:disabled)`. Sin eso les ganaba el hover genérico de `button` y se pintaban con el violeta girado de tono, con el texto ilegible encima.
+- **`.aviso` es bloque**, no flex: como flex, cada link quedaba como una columna aparte.
+- **`.tabla-scroll` es `position: relative`**: el texto `.solo-lectores` de los encabezados escapaba del scroll y estiraba la página.
+- **`.subpanel`** lleva borde fino completo en vez de la franja de 4px a la izquierda.

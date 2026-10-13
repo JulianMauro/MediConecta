@@ -94,12 +94,13 @@ export function CuentaPage() {
 				<NotificacionesSection strikes={strikes.strikes} />
 				<ViajesSection />
 				{/*
-				 * Solo en el celular: lo que en escritorio esta en la barra de arriba (Salir)
-				 * y en el panel flotante (el estilo) y en el telefono no entra. Va ultima en
-				 * la grilla a proposito: las tarjetas alternan su forma por posicion
-				 * (nth-child) y una oculta en el medio correria a las demas.
+				 * El estilo de la app y la sesion. Con sesion iniciada el panel de estilo ya
+				 * no flota sobre el contenido (tapaba botones, como el de contratar el
+				 * ultimo plan): vive aca, en celular y en escritorio. Sin sesion (login,
+				 * registro) sigue flotando. En escritorio comparte la ultima fila con el
+				 * historial de viajes.
 				 */}
-				<section id="ajustes" className="tarjeta solo-movil ajustes">
+				<section id="ajustes" className="tarjeta ajustes">
 					<h2>Ajustes</h2>
 					<h3>Apariencia</h3>
 					<p className="ayuda">El fondo y el estilo de las tarjetas. Se recuerda en este teléfono.</p>

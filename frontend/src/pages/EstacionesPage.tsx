@@ -100,20 +100,28 @@ export function EstacionesPage() {
 
 	return (
 		<div className="contenido">
-			<header className="encabezado-pagina">
-				<h1>Estaciones y disponibilidad</h1>
-				<p className="bajada">
-					Podés sacar una bici de cualquier estación y devolverla en cualquier otra que tenga un anclaje libre.
-				</p>
+			{/*
+			 * El resumen de la red va en el encabezado y no suelto debajo: es el dato de
+			 * toda la pagina, y suelto era una pastilla mas flotando sobre el fondo.
+			 */}
+			<header className="encabezado-pagina encabezado-con-resumen">
+				<div>
+					<h1>Estaciones y disponibilidad</h1>
+					<p className="bajada">
+						Podés sacar una bici de cualquier estación y devolverla en cualquier otra que tenga un anclaje libre.
+					</p>
+				</div>
+				{!cargando && !error && (
+					<p className="resumen-red">
+						<strong>{estaciones.length}</strong> {estaciones.length === 1 ? 'estación activa' : 'estaciones activas'} ·{' '}
+						<strong>{totalBicis}</strong> {totalBicis === 1 ? 'bici disponible' : 'bicis disponibles'} ahora
+					</p>
+				)}
 			</header>
 
-			{!cargando && !error && (
-				<p className="resumen-red">
-					<strong>{estaciones.length}</strong> {estaciones.length === 1 ? 'estación activa' : 'estaciones activas'} ·{' '}
-					<strong>{totalBicis}</strong> {totalBicis === 1 ? 'bici disponible' : 'bicis disponibles'} ahora
-				</p>
-			)}
-
+			{/* Busqueda, filtro, recarga y cuantas quedan en pantalla: una sola barra de
+			    herramientas sobre su superficie. Antes eran piezas sueltas y el rotulo
+			    del buscador caia directo sobre el fondo de rayas. */}
 			<div className="fila filtros">
 				<div className="campo campo-inline">
 					<label htmlFor={buscadorId}>Buscar estación</label>
@@ -132,11 +140,10 @@ export function EstacionesPage() {
 				<button type="button" className="boton-secundario" onClick={recargar}>
 					Actualizar
 				</button>
+				<p className="ayuda filtros-cuenta" aria-live="polite">
+					{cargando ? 'Cargando estaciones…' : `${plural(visibles.length, 'estación', 'estaciones')} en pantalla`}
+				</p>
 			</div>
-
-			<p className="ayuda" aria-live="polite">
-				{cargando ? 'Cargando estaciones…' : `${plural(visibles.length, 'estación', 'estaciones')} en pantalla`}
-			</p>
 
 			{error && <p className="aviso aviso-alerta">{error}</p>}
 

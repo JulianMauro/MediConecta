@@ -43,7 +43,9 @@ Módulos: `usuario`, `estacion`, `membresia`, `flota` (vía `EstadoBicicleta`), 
 ## Enum de estado como texto (`@Enumerated(EnumType.STRING)`)
 
 Todos los enums de estado se persisten como `STRING`, nunca `ORDINAL`, para que agregar un valor nuevo no corra el significado de los ya guardados.
-Módulos: `usuario` (`Rol`), `estacion` (`EstadoDock`), `flota` (`EstadoBicicleta`), `membresia` (`TipoMembresia`, `EstadoSuscripcion`), `strike` (`EstadoStrike`), `pago` (`EstadoPago`, `ConceptoPago`), `notificacion` (`TipoNotificacion`).
+Módulos: `usuario` (`Rol`), `estacion` (`EstadoDock`), `flota` (`EstadoBicicleta`), `membresia` (`TipoMembresia`, `EstadoSuscripcion`), `strike` (`EstadoStrike`), `pago` (`EstadoPago`, `ConceptoPago`), `notificacion` (`TipoNotificacion`), `soporte` (`TipoAccionSoporte`).
+
+Ojo en PostgreSQL: Hibernate crea cada una de estas columnas con un `CHECK` que lista los valores del enum, y `ddl-auto=update` no lo regenera. Sin nada más, sumar un valor al enum rompe el `INSERT` en cualquier base ya creada. `persistencia/SincronizadorChecksDeEnums` lo resuelve al arrancar: compara cada `CHECK` con el enum de Java y lo rehace si no coinciden. Así que agregar un valor sigue sin necesitar una migración a mano.
 
 ## Ubicación polimórfica vía FK nullable (no herencia JPA)
 

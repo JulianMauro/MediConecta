@@ -68,6 +68,13 @@ public class Viaje {
 	@Column(name = "excedio_tiempo", nullable = false)
 	private boolean excedioTiempo;
 
+	/**
+	 * Soporte decidio no cobrar el exceso (ej. el anclaje no trababa): no se genero strike.
+	 * El default en la columna es para que ddl-auto=update pueda agregarla a una tabla con filas.
+	 */
+	@Column(name = "exceso_condonado", nullable = false, columnDefinition = "boolean default false not null")
+	private boolean excesoCondonado;
+
 	protected Viaje() {
 	}
 
@@ -81,10 +88,38 @@ public class Viaje {
 		this.excedioTiempo = false;
 	}
 
-	public void finalizar(Anclaje anclajeDestino) {
+	/**
+	 * Cierra el viaje. anclajeDestino null = la bici no quedo en un anclaje (soporte la mando
+	 * a un almacen). fin puede ser anterior a ahora: soporte cierra con la hora real de llegada.
+	 * excedioTiempo siempre refleja la duracion real; perdonar el exceso es excesoCondonado.
+	 */
+	public void cerrar(Anclaje anclajeDestino, Instant fin, boolean condonarExceso) {
+		if (this.fechaFin != null) {
+			throw new IllegalStateException("el viaje " + id + " ya estaba cerrado");
+		}
+		if (fin.isBefore(fechaInicio)) {
+			throw new IllegalArgumentException("el viaje no puede terminar antes de empezar");
+		}
 		this.anclajeDestino = anclajeDestino;
-		this.fechaFin = Instant.now();
+		this.fechaFin = fin;
 		this.excedioTiempo = duracionMinutos() > membresia.getTiempoPermitidoMinutos();
+		this.excesoCondonado = condonarExceso && excedioTiempo;
+	}
+
+	/**
+	 * Soporte acorta un viaje ya cerrado (ej. llego a la estacion antes y no pudo anclar).
+	 * Solo acorta: la correccion es para ayudar al usuario, nunca para cobrarle mas.
+	 */
+	public void corregirFin(Instant nuevoFin) {
+		if (this.fechaFin == null) {
+			throw new IllegalStateException("el viaje " + id + " sigue en curso: se cierra, no se corrige");
+		}
+		if (nuevoFin.isBefore(fechaInicio) || !nuevoFin.isBefore(fechaFin)) {
+			throw new IllegalArgumentException("la hora corregida tiene que estar entre el inicio y la hora de fin actual");
+		}
+		this.fechaFin = nuevoFin;
+		this.excedioTiempo = duracionMinutos() > membresia.getTiempoPermitidoMinutos();
+		this.excesoCondonado = excesoCondonado && excedioTiempo;
 	}
 
 	public long duracionMinutos() {
@@ -130,5 +165,9 @@ public class Viaje {
 
 	public boolean isExcedioTiempo() {
 		return excedioTiempo;
+	}
+
+	public boolean isExcesoCondonado() {
+		return excesoCondonado;
 	}
 }

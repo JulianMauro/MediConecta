@@ -194,7 +194,7 @@ export interface ViajeResponse {
 
 // ---- strike ----
 
-export type EstadoStrike = 'ACTIVO' | 'SALDADO';
+export type EstadoStrike = 'ACTIVO' | 'SALDADO' | 'ANULADO';
 
 export interface StrikeResponse {
 	id: number;
@@ -207,7 +207,7 @@ export interface StrikeResponse {
 
 // ---- notificacion ----
 
-export type TipoNotificacion = 'TIEMPO_EXTRA' | 'STRIKE' | 'BLOQUEO';
+export type TipoNotificacion = 'TIEMPO_EXTRA' | 'STRIKE' | 'BLOQUEO' | 'SOPORTE';
 
 export interface NotificacionResponse {
 	id: number;
@@ -221,7 +221,7 @@ export interface NotificacionResponse {
 
 // ---- pago ----
 
-export type EstadoPago = 'PENDIENTE' | 'PAGADO' | 'RECHAZADO';
+export type EstadoPago = 'PENDIENTE' | 'PAGADO' | 'RECHAZADO' | 'ANULADO';
 export type ConceptoPago = 'TIEMPO_EXTRA' | 'MEMBRESIA';
 
 export interface PagoConfirmarRequest {
@@ -300,4 +300,89 @@ export interface ChatMensajeResponse {
 	contenido: string;
 	fechaEnvio: string;
 	fechaEntrega: string | null;
+}
+
+// ---- soporte (admin resolviendo problemas de un usuario desde su ticket) ----
+export type TipoAccionSoporte =
+	| 'CERRAR_VIAJE'
+	| 'CORREGIR_VIAJE'
+	| 'ANULAR_STRIKE'
+	| 'CONFIRMAR_PAGO'
+	| 'DESBLOQUEAR_CUENTA'
+	| 'ANCLAJE_FUERA_SERVICIO';
+
+export interface ViajeSoporteResponse {
+	id: number;
+	codigoBicicleta: string;
+	estacionOrigen: string;
+	anclajeOrigenNumero: number;
+	/** null si sigue en curso o si la bici termino en un almacen. */
+	estacionDestino: string | null;
+	anclajeDestinoNumero: number | null;
+	fechaInicio: string;
+	fechaFin: string | null;
+	duracionMinutos: number;
+	minutosPermitidos: number;
+	excedioTiempo: boolean;
+	excesoCondonado: boolean;
+}
+
+export interface StrikeSoporteResponse {
+	id: number;
+	viajeId: number;
+	fechaGeneracion: string;
+	estado: EstadoStrike;
+	pagoId: number | null;
+	monto: number | null;
+	estadoPago: EstadoPago | null;
+}
+
+export interface AccionSoporteResponse {
+	id: number;
+	ticketId: number;
+	adminId: number;
+	usuarioId: number;
+	tipo: TipoAccionSoporte;
+	detalle: string;
+	motivo: string;
+	fecha: string;
+}
+
+export interface PlanVigente {
+	suscripcionId: number;
+	nombre: string;
+	minutosPorViaje: number;
+	viajesPorDia: number;
+	vence: string;
+}
+
+export interface ResumenUsuarioResponse {
+	ticketId: number;
+	viajeDelTicketId: number | null;
+	usuario: UsuarioResponse;
+	viajeEnCurso: ViajeSoporteResponse | null;
+	ultimosViajes: ViajeSoporteResponse[];
+	plan: PlanVigente | null;
+	strikesActivos: number;
+	strikesParaBloquear: number;
+	strikes: StrikeSoporteResponse[];
+	pagosPendientes: PagoResponse[];
+	bloqueo: BloqueoCuentaResponse | null;
+	acciones: AccionSoporteResponse[];
+}
+
+export interface ResultadoSoporteResponse {
+	accion: AccionSoporteResponse;
+	resumen: ResumenUsuarioResponse;
+}
+
+/** Un anclaje (anclajeDestinoId) o un almacen (almacenId + estadoBicicleta), no ambos. */
+export interface CerrarViajeRequest {
+	anclajeDestinoId: number | null;
+	almacenId: number | null;
+	estadoBicicleta: 'EN_REPARACION' | 'DESACTIVADA' | null;
+	/** null = ahora. */
+	fechaFin: string | null;
+	condonarExceso: boolean;
+	motivo: string;
 }

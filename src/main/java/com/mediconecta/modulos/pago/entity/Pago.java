@@ -107,6 +107,23 @@ public class Pago {
 		return true;
 	}
 
+	/** Cancela un cobro que todavia no se pago. Uno PAGADO no se anula: no hay reintegros. */
+	public void anular() {
+		if (this.estado == EstadoPago.PAGADO) {
+			throw new IllegalStateException("el pago " + id + " ya fue pagado: no se puede anular");
+		}
+		this.estado = EstadoPago.ANULADO;
+		this.fechaResolucion = Instant.now();
+	}
+
+	/** Corrige el importe de un cobro pendiente (ej. soporte acorto el viaje y bajo el exceso). */
+	public void ajustarMonto(BigDecimal nuevoMonto) {
+		if (this.estado != EstadoPago.PENDIENTE) {
+			throw new IllegalStateException("solo se ajusta el monto de un pago PENDIENTE");
+		}
+		this.monto = nuevoMonto;
+	}
+
 	public Long getId() {
 		return id;
 	}

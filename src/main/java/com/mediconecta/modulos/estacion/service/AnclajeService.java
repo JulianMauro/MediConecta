@@ -54,6 +54,11 @@ public class AnclajeService {
 	@Transactional
 	public AnclajeResponse marcarFueraServicio(Long anclajeId) {
 		Anclaje anclaje = buscar(anclajeId);
+		// Con una bici trabada adentro quedaria OCUPADO para la bici y FUERA_SERVICIO para la estacion.
+		if (anclaje.getEstado() == EstadoDock.OCUPADO) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT,
+					"el anclaje esta ocupado por una bicicleta: primero hay que retirarla");
+		}
 		anclaje.marcarFueraServicio();
 		return AnclajeResponse.desde(anclaje);
 	}

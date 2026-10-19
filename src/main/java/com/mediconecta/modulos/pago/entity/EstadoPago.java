@@ -5,5 +5,7 @@ public enum EstadoPago {
 
 	PENDIENTE,
 	PAGADO,
-	RECHAZADO
+	RECHAZADO,
+	/** Soporte cancelo el cobro (al anular el strike que lo genero). Ya no se puede pagar. */
+	ANULADO
 }

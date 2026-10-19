@@ -8,6 +8,8 @@ interface Props {
 	children: ReactNode;
 	/** Botones de acción (confirmar/cancelar). Si no se pasa, el modal solo tiene la X para cerrar. */
 	footer?: ReactNode;
+	/** Para contenido con mas informacion que un formulario corto (ej. gestionar un usuario). */
+	ancho?: boolean;
 }
 
 const FOCUSABLES =
@@ -20,7 +22,7 @@ const FOCUSABLES =
  * Accesibilidad: el foco entra al abrir, queda atrapado adentro mientras esta abierto
  * (Tab y Shift+Tab circulan), y vuelve al elemento que lo abrio al cerrar.
  */
-export function Modal({ title, description, onClose, children, footer }: Props) {
+export function Modal({ title, description, onClose, children, footer, ancho = false }: Props) {
 	const cajaRef = useRef<HTMLDivElement>(null);
 	const tituloId = useId();
 	const descripcionId = useId();
@@ -86,7 +88,7 @@ export function Modal({ title, description, onClose, children, footer }: Props) 
 		<div className="modal-fondo" onClick={onClose}>
 			<div
 				ref={cajaRef}
-				className="modal-caja"
+				className={ancho ? 'modal-caja modal-caja-ancha' : 'modal-caja'}
 				role="dialog"
 				aria-modal="true"
 				aria-labelledby={tituloId}

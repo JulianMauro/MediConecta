@@ -50,6 +50,10 @@ public class TicketService {
 		if (request.viajeId() != null) {
 			viaje = viajeRepository.findById(request.viajeId())
 					.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "viaje no encontrado"));
+			// Soporte opera sobre el viaje del ticket: no puede ser el de otro usuario.
+			if (!viaje.getUsuario().getId().equals(usuarioId)) {
+				throw new ResponseStatusException(HttpStatus.FORBIDDEN, "no podes reportar un viaje de otro usuario");
+			}
 		}
 
 		Ticket ticket = ticketRepository.save(new Ticket(usuario, viaje, request.categoria(), request.motivo()));

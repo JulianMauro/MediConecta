@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PeopleBikes — Diagramas</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#fbfaf8; --panel:#ffffff; --ink:#1c1b19; --muted:#6b6862;
+    --line:#e6e2db; --accent:#0f7b6c; --accent-soft:#e6f2ef; --code:#f4f2ee;
+  }
+  :root[data-theme="dark"]{
+    --bg:#16181a; --panel:#1e2124; --ink:#e9e6e1; --muted:#9b968e;
+    --line:#31363b; --accent:#4fd1b8; --accent-soft:#1c2f2c; --code:#24282c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  a{color:var(--accent)}
+  /* layout */
+  .wrap{display:grid;grid-template-columns:270px minmax(0,1fr);gap:0;min-height:100vh}
+  nav{position:sticky;top:0;height:100vh;overflow:auto;border-right:1px solid var(--line);
+      background:var(--panel);padding:18px 14px}
+  nav h2{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 10px 6px}
+  nav a{display:block;padding:6px 8px;border-radius:6px;text-decoration:none;color:var(--ink);font-size:13.5px}
+  nav a:hover{background:var(--accent-soft)}
+  nav a.lvl3{padding-left:20px;color:var(--muted);font-size:12.5px}
+  main{padding:28px 34px 90px;max-width:1100px}
+  h1{font-size:27px;margin:.2em 0 .5em;letter-spacing:-.01em}
+  h2{font-size:20px;margin:2.2em 0 .6em;padding-top:.6em;border-top:1px solid var(--line)}
+  h3{font-size:16px;margin:1.6em 0 .5em}
+  blockquote{margin:1em 0;padding:.6em 1em;border-left:3px solid var(--line);color:var(--muted)}
+  code{background:var(--code);padding:.15em .4em;border-radius:4px;font-size:.88em;
+       font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  pre code{display:block;padding:12px;overflow:auto}
+  table{border-collapse:collapse;width:100%;margin:1em 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left}
+  th{background:var(--code)}
+  hr{border:0;border-top:1px solid var(--line);margin:2em 0}
+  /* toolbar */
+  .bar{position:sticky;top:0;z-index:20;display:flex;gap:8px;align-items:center;
+       background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);
+       padding:10px 0 12px;margin-bottom:4px;border-bottom:1px solid var(--line)}
+  button{font:inherit;font-size:13px;padding:6px 12px;border-radius:7px;cursor:pointer;
+         border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  .grow{flex:1}
+  /* diagram cards */
+  .diagram{border:1px solid var(--line);border-radius:10px;background:var(--panel);margin:1.1em 0;overflow:hidden}
+  .diagram .tools{display:flex;gap:6px;justify-content:flex-end;padding:7px 9px;border-bottom:1px solid var(--line);background:var(--code)}
+  .diagram .tools button{font-size:12px;padding:4px 9px}
+  .diagram .canvas{padding:16px;overflow:auto;text-align:center}
+  .diagram svg{max-width:100%;height:auto}
+  @media print{
+    nav,.bar,.tools{display:none!important}
+    .wrap{display:block} main{max-width:none;padding:0}
+    .diagram{break-inside:avoid;page-break-inside:avoid;border-color:#ccc}
+    h2{break-before:page;page-break-before:always}
+    h2:first-of-type{break-before:auto;page-break-before:auto}
+  }
+  @media (max-width:860px){ .wrap{grid-template-columns:1fr} nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)} main{padding:18px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav><h2>Índice</h2><div id="toc"></div></nav>
+  <main>
+    <div class="bar">
+      <button id="pdf">🖨 Imprimir / PDF</button>
+      <button id="allsvg">⬇ Descargar todos (SVG)</button>
+      <button id="allpng">⬇ Descargar todos (PNG)</button>
+      <span class="grow"></span>
+      <button id="theme">◐ Tema</button>
+    </div>
+    <div id="doc"></div>
+  </main>
+</div>
+
+<script id="md" type="application/json">"# PeopleBikes — Diagramas del sistema\r\n\r\nSistema de transporte público en bicicletas compartidas. El cliente retira una\r\nbicicleta de una estación y la devuelve en cualquier otra, dentro de los límites\r\ndel plan que contrató.\r\n\r\n- **Alcance funcional completo:** [ALCANCE.md](ALCANCE.md) — 59 funciones (F-01…F-59) en 11 módulos.\r\n- **Patrones de arquitectura:** [patrones.md](patrones.md).\r\n- **Stack:** Spring Boot 4 + Spring Data JPA + PostgreSQL en el backend · React 19 + TypeScript + Vite 8 + React Router 7 en el frontend.\r\n- El nombre heredado *MediConecta* sobrevive solo en el package Java (`com.mediconecta.*`); el producto es **PeopleBikes**.\r\n\r\n> Los bloques ```` ```mermaid ```` se renderizan en GitHub, VS Code y la mayoría de los visores de Markdown. Para exportarlos a imagen: <https://mermaid.live>.\r\n\r\n---\r\n\r\n## 1. Arquitectura\r\n\r\nVista de capas: qué corre dónde y contra qué habla.\r\n\r\n```mermaid\r\nflowchart TB\r\n    subgraph FE[\"Frontend — React 19 · TypeScript · Vite 8\"]\r\n        R[\"SPA · React Router 7<br/>login · registro · estaciones · mapa<br/>planes · mi cuenta · panel admin\"]\r\n        TOK[\"Sesión JWT<br/>access token + refresh automático\"]\r\n    end\r\n\r\n    subgraph BE[\"Backend — Spring Boot 4 · Spring Data JPA\"]\r\n        JWT[\"Filtro JWT + @PreAuthorize<br/>roles ADMIN / CLIENTE\"]\r\n        DOM[\"11 módulos de dominio<br/>cada uno: entity → repository → service → controller\"]\r\n        SEED[\"Seeder de admin inicial\"]\r\n    end\r\n\r\n    PG[(\"PostgreSQL<br/>H2 en memoria para el perfil de test\")]\r\n    GM([\"Google Maps · Geocoding API\"])\r\n\r\n    R -->|\"HTTP · JSON · Bearer token\"| JWT\r\n    TOK -.->|adjunta el token| R\r\n    JWT --> DOM\r\n    DOM --> PG\r\n    DOM -->|\"dirección → lat/lng<br/>una sola vez, al crear la estación\"| GM\r\n```\r\n\r\n**Decisiones que se ven acá:**\r\n\r\n- El frontend nunca habla con la base: todo pasa por el backend, que valida rol y reglas.\r\n- El QR de desbloqueo **no toca el backend** — el escáner lee un string que ya es el código de la bici y usa el mismo endpoint que el tipeo manual.\r\n- Google Maps es opcional: sin API key la estación se guarda sin coordenadas y el mapa degrada con un aviso.\r\n\r\n---\r\n\r\n## 2. Los 11 módulos y su orquestación\r\n\r\nCada módulo tiene las cinco capas completas. Las flechas son dependencias reales\r\nentre servicios: **no hay ciclos** — ningún módulo depende de otro que dependa de él.\r\n\r\n```mermaid\r\nflowchart LR\r\n    subgraph ACC[\"1 · Cuenta y acceso\"]\r\n        AUTH[\"auth<br/>registro · login · JWT\"]\r\n        USU[\"usuario<br/>+ bloqueo de cuenta\"]\r\n    end\r\n    subgraph COM[\"2-4 · Comercial\"]\r\n        MEM[\"membresia<br/>+ suscripciones\"]\r\n        PAG[\"pago\"]\r\n    end\r\n    subgraph INF[\"5-8 · Infraestructura\"]\r\n        EST[\"estacion<br/>+ anclajes\"]\r\n        FLO[\"flota\"]\r\n        ALM[\"almacen\"]\r\n        LOG[\"logistica<br/>traslados en lote\"]\r\n    end\r\n    subgraph OPE[\"9-11 · Operación\"]\r\n        VIA[\"viaje — orquesta el ciclo del viaje\"]\r\n        STR[\"strike — orquesta el exceso de tiempo\"]\r\n        NOT[\"notificacion\"]\r\n    end\r\n    MON[\"monitoreo · usuarios activos (auxiliar)\"]\r\n\r\n    AUTH --> USU\r\n    MEM -->|\"pago pendiente al contratar\"| PAG\r\n    VIA -->|\"exige plan vigente\"| MEM\r\n    VIA -->|\"exige cuenta no bloqueada\"| USU\r\n    VIA -->|\"mueve el estado de la bici\"| FLO\r\n    VIA -->|\"libera / ocupa anclajes\"| EST\r\n    VIA -->|\"si el viaje excedió el tiempo\"| STR\r\n    STR -->|\"cobro por minuto extra\"| PAG\r\n    STR -->|\"avisa el exceso\"| NOT\r\n    STR -->|\"3 strikes sin saldar ⇒ bloquea\"| USU\r\n    USU -->|\"avisa el bloqueo\"| NOT\r\n    LOG --> FLO\r\n    LOG --> EST\r\n    LOG --> ALM\r\n    VIA --> MON\r\n```\r\n\r\n---\r\n\r\n## 3. Modelo de dominio — núcleo (cliente, plan, viaje, penalización)\r\n\r\n```mermaid\r\nerDiagram\r\n    USUARIO ||--o{ SUSCRIPCION_USUARIO : contrata\r\n    USUARIO ||--o{ VIAJE : realiza\r\n    USUARIO ||--o{ PAGO : \"es titular de\"\r\n    USUARIO ||--o{ STRIKE : acumula\r\n    USUARIO ||--o{ NOTIFICACION : recibe\r\n    USUARIO ||--o{ BLOQUEO_CUENTA : \"queda registrado en\"\r\n    MEMBRESIA ||--o{ SUSCRIPCION_USUARIO : \"es la plantilla de\"\r\n    SUSCRIPCION_USUARIO ||--o{ VIAJE : habilita\r\n    VIAJE ||--o| STRIKE : \"puede generar\"\r\n    STRIKE ||--o| PAGO : \"emite (TIEMPO_EXTRA)\"\r\n    MEMBRESIA ||--o{ PAGO : \"cobra (MEMBRESIA)\"\r\n    VIAJE ||--o{ NOTIFICACION : origina\r\n\r\n    USUARIO {\r\n        bigint id PK\r\n        string email UK\r\n        string dni\r\n        enum rol \"ADMIN | CLIENTE\"\r\n        boolean activo \"baja lógica, no se borra\"\r\n    }\r\n    MEMBRESIA {\r\n        bigint id PK\r\n        enum tipo \"INDIVIDUAL | SEMANAL | MENSUAL\"\r\n        decimal precio\r\n        int tiempoPermitidoMinutos \"incluidos por viaje\"\r\n        int viajesPorDia\r\n        int tiempoEsperaMinutos \"entre viajes\"\r\n        decimal tarifaMinutoExtra\r\n        boolean activa\r\n    }\r\n    SUSCRIPCION_USUARIO {\r\n        bigint id PK\r\n        datetime fechaInicio\r\n        datetime fechaFin\r\n        enum estado \"ACTIVA | VENCIDA | CANCELADA\"\r\n    }\r\n    VIAJE {\r\n        bigint id PK\r\n        datetime fechaInicio\r\n        datetime fechaFin \"null mientras está en curso\"\r\n        boolean excedioTiempo\r\n    }\r\n    PAGO {\r\n        bigint id PK\r\n        decimal monto\r\n        enum concepto \"MEMBRESIA | TIEMPO_EXTRA\"\r\n        enum estado \"PENDIENTE | PAGADO | RECHAZADO\"\r\n        string referenciaPasarela\r\n    }\r\n    STRIKE {\r\n        bigint id PK\r\n        datetime fechaGeneracion\r\n        enum estado \"ACTIVO | SALDADO\"\r\n    }\r\n    BLOQUEO_CUENTA {\r\n        bigint id PK\r\n        datetime fechaBloqueo\r\n        string motivo\r\n        boolean activo\r\n        datetime fechaDesbloqueo\r\n    }\r\n    NOTIFICACION {\r\n        bigint id PK\r\n        enum tipo \"TIEMPO_EXTRA | STRIKE | BLOQUEO\"\r\n        string mensaje\r\n        boolean leida\r\n    }\r\n```\r\n\r\n---\r\n\r\n## 4. Modelo de dominio — infraestructura (estaciones, flota, logística)\r\n\r\n```mermaid\r\nerDiagram\r\n    ESTACION ||--o{ ANCLAJE : contiene\r\n    ANCLAJE ||--o| BICICLETA : \"aloja 0 o 1\"\r\n    ALMACEN ||--o{ BICICLETA : guarda\r\n    ANCLAJE ||--o{ VIAJE : \"es el origen de\"\r\n    ANCLAJE |o--o{ VIAJE : \"es el destino de\"\r\n    BICICLETA ||--o{ VIAJE : \"se usa en\"\r\n    MOVIMIENTO_BICIS ||--|{ MOVIMIENTO_BICI_ITEM : agrupa\r\n    BICICLETA ||--o{ MOVIMIENTO_BICI_ITEM : \"trasladada en\"\r\n    USUARIO ||--o{ MOVIMIENTO_BICIS : \"ejecuta (admin)\"\r\n    ESTACION ||--o{ MOVIMIENTO_BICIS : \"origen / destino\"\r\n    ALMACEN ||--o{ MOVIMIENTO_BICIS : \"origen / destino\"\r\n\r\n    ESTACION {\r\n        bigint id PK\r\n        string nombre\r\n        string direccion\r\n        decimal latitud \"geocodificada\"\r\n        decimal longitud\r\n        int capacidad \"tope de anclajes\"\r\n        boolean activa\r\n    }\r\n    ANCLAJE {\r\n        bigint id PK\r\n        int numero \"único dentro de la estación\"\r\n        enum estado \"LIBRE | OCUPADO | FUERA_SERVICIO\"\r\n    }\r\n    BICICLETA {\r\n        bigint id PK\r\n        string codigo UK \"grabado en la bici · va en el QR\"\r\n        enum estado \"DISPONIBLE | EN_VIAJE | EN_REPARACION | DESACTIVADA\"\r\n    }\r\n    ALMACEN {\r\n        bigint id PK\r\n        string nombre\r\n        string direccion\r\n        int capacidad\r\n    }\r\n    MOVIMIENTO_BICIS {\r\n        bigint id PK\r\n        datetime fecha\r\n    }\r\n    MOVIMIENTO_BICI_ITEM {\r\n        bigint id PK\r\n    }\r\n```\r\n\r\n**Regla 6 — ubicación de la bicicleta:** cada bicicleta apunta a un anclaje *o* a\r\nun almacén (dos FK nullable). Durante un viaje no está en ninguno; en todo otro\r\nmomento, en exactamente uno. El invariante lo garantiza la capa de servicio.\r\n\r\n---\r\n\r\n## 5. Flujo principal del cliente (camino feliz)\r\n\r\nContratar → pagar → retirar → devolver.\r\n\r\n```mermaid\r\nsequenceDiagram\r\n    actor C as Cliente\r\n    participant MEM as membresia\r\n    participant PAG as pago\r\n    participant VIA as viaje\r\n    participant FLO as flota\r\n    participant EST as estacion y anclaje\r\n\r\n    C->>MEM: Contratar plan (F-13)\r\n    MEM->>PAG: Pago PENDIENTE · concepto MEMBRESIA (F-18)\r\n    C->>PAG: Confirmar pago (F-21)\r\n    PAG->>MEM: Suscripción ACTIVA · vigencia según el tipo (F-14)\r\n\r\n    C->>VIA: Desbloquear BICI-001 (F-41)\r\n    VIA->>VIA: Validar plan vigente · viajes del día ·<br/>espera entre viajes · cuenta no bloqueada (F-42)\r\n    VIA->>FLO: Bicicleta → EN_VIAJE (F-33)\r\n    VIA->>EST: Anclaje de origen → LIBRE (F-46)\r\n    VIA-->>C: Viaje en curso · tiempo transcurrido (F-43)\r\n\r\n    C->>VIA: Devolver en un anclaje libre (F-44)\r\n    VIA->>VIA: Calcular duración · ¿excedió el tiempo? (F-45)\r\n    VIA->>FLO: Bicicleta → DISPONIBLE\r\n    VIA->>EST: Anclaje de destino → OCUPADO (F-46)\r\n    VIA-->>C: Viaje finalizado · queda en el historial (F-47)\r\n```\r\n\r\n---\r\n\r\n## 6. Flujo de excepción — exceso de tiempo, penalización y bloqueo\r\n\r\n```mermaid\r\nsequenceDiagram\r\n    participant VIA as viaje\r\n    participant STR as strike\r\n    participant PAG as pago\r\n    participant NOT as notificacion\r\n    participant USU as usuario\r\n\r\n    VIA->>VIA: Al finalizar · la duración supera los minutos del plan (F-45)\r\n    VIA->>STR: Generar penalización (F-49)\r\n    STR->>PAG: Pago PENDIENTE · minutos extra × tarifa del plan (F-50)\r\n    STR->>NOT: Notificar el exceso de tiempo (F-56)\r\n\r\n    Note over STR,USU: Evaluar los strikes ACTIVO del usuario\r\n    alt Llegó a 3 strikes sin saldar\r\n        STR->>USU: Bloquear la cuenta · registrar motivo y fecha (F-52, F-55)\r\n        USU->>NOT: Notificar el bloqueo (F-56)\r\n    end\r\n\r\n    Note over PAG,STR: Más tarde, cuando el cliente paga\r\n    USU->>PAG: Confirmar el pago de la penalización (F-21)\r\n    PAG->>STR: Strike → SALDADO (F-51)\r\n```\r\n\r\n---\r\n\r\n## 7. Ciclo de vida de la bicicleta\r\n\r\n```mermaid\r\nstateDiagram-v2\r\n    [*] --> DESACTIVADA : alta en un almacén (F-31)\r\n    DESACTIVADA --> DISPONIBLE : traslado a un anclaje (F-38)\r\n    DISPONIBLE --> EN_VIAJE : desbloqueo (F-41)\r\n    EN_VIAJE --> DISPONIBLE : devolución en un anclaje (F-44)\r\n    DISPONIBLE --> EN_REPARACION : lo marca un admin (F-33)\r\n    EN_REPARACION --> DISPONIBLE : lo repone un admin\r\n    DISPONIBLE --> DESACTIVADA : baja lógica (F-33)\r\n\r\n    note right of EN_VIAJE\r\n        Fuera de todo anclaje y almacén.\r\n        En cualquier otro estado: en exactamente uno.\r\n    end note\r\n```\r\n\r\n---\r\n\r\n## 8. Ciclo de vida de la suscripción\r\n\r\n```mermaid\r\nstateDiagram-v2\r\n    [*] --> PagoPendiente : contratar un plan (F-13)\r\n    PagoPendiente --> ACTIVA : se confirma el pago (F-14)\r\n    PagoPendiente --> Descartada : se rechaza el pago (F-22)\r\n    ACTIVA --> VENCIDA : llega la fecha de fin\r\n    ACTIVA --> CANCELADA : la cancela el cliente (F-17)\r\n    Descartada --> [*]\r\n    VENCIDA --> [*]\r\n    CANCELADA --> [*]\r\n```\r\n\r\n---\r\n\r\n## 9. Ciclo de vida de la cuenta\r\n\r\n```mermaid\r\nstateDiagram-v2\r\n    [*] --> Activa : registro (F-01)\r\n    Activa --> Activa : 1.er y 2.º strike\r\n    Activa --> Bloqueada : 3.er strike sin saldar (F-52)\r\n    Bloqueada --> Activa : se saldan los strikes / un admin desbloquea\r\n\r\n    note right of Bloqueada\r\n        No puede iniciar viajes (F-42).\r\n        Cada bloqueo queda como historial auditable (F-55).\r\n    end note\r\n```\r\n\r\n---\r\n\r\n## Reglas de negocio transversales\r\n\r\n1. **Sin plan vigente no hay viaje.** El plan define minutos incluidos, viajes por día y espera mínima entre viajes.\r\n2. **Un viaje a la vez por usuario.**\r\n3. **Nada se borra.** Usuarios, estaciones, planes y bicicletas se dan de baja lógica.\r\n4. **Toda penalización tiene un pago asociado**, y saldarla exige confirmarlo.\r\n5. **Tres penalizaciones sin saldar bloquean la cuenta.**\r\n6. **Una bicicleta está en un anclaje o en un almacén**, nunca en ambos ni en ninguno (salvo durante el viaje).\r\n7. **Cada cambio de estado relevante deja historial**, no un simple indicador.\r\n"</script>
+<script>
+const MD = JSON.parse(document.getElementById('md').textContent);
+const isDark = () => document.documentElement.getAttribute('data-theme') === 'dark';
+try{ const t = localStorage.getItem('pb-theme');
+  if (t) document.documentElement.setAttribute('data-theme', t);
+  else if (matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.setAttribute('data-theme','dark');
+}catch(e){}
+
+// --- render markdown, holding mermaid blocks aside -------------------------
+const blocks = [];
+marked.use({ renderer: { code(code, lang){
+  if ((lang||'').trim() === 'mermaid'){
+    const i = blocks.push(code) - 1;
+    return `<div class="diagram" data-i="${i}">
+      <div class="tools">
+        <button data-act="svg">SVG</button>
+        <button data-act="png">PNG</button>
+        <button data-act="code">Código</button>
+      </div>
+      <div class="canvas" id="d${i}">…</div></div>`;
+  }
+  return false;
+}}});
+document.getElementById('doc').innerHTML = marked.parse(MD);
+
+// --- table of contents ----------------------------------------------------
+const toc = document.getElementById('toc');
+document.querySelectorAll('#doc h1, #doc h2, #doc h3').forEach((h,i)=>{
+  h.id = 'h'+i;
+  const a = document.createElement('a');
+  a.href = '#h'+i; a.textContent = h.textContent;
+  if (h.tagName === 'H3') a.className = 'lvl3';
+  if (h.tagName === 'H1') a.style.fontWeight = '600';
+  toc.appendChild(a);
+});
+
+// --- mermaid --------------------------------------------------------------
+async function draw(){
+  mermaid.initialize({ startOnLoad:false, theme: isDark()?'dark':'default',
+    securityLevel:'loose', flowchart:{htmlLabels:true, curve:'basis'}, er:{useMaxWidth:true} });
+  for (let i=0;i<blocks.length;i++){
+    const host = document.getElementById('d'+i);
+    try {
+      const { svg } = await mermaid.render('m'+i+'_'+Date.now(), blocks[i]);
+      host.innerHTML = svg;
+    } catch(e){
+      host.innerHTML = '<pre style="text-align:left;color:#c0392b">Error de sintaxis Mermaid:\n'+
+        String(e.message||e).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))+'</pre>';
+    }
+  }
+}
+draw();
+
+// --- downloads ------------------------------------------------------------
+function slug(i){
+  const card = document.querySelector(`.diagram[data-i="${i}"]`);
+  let el = card, t = 'diagrama-'+(i+1);
+  while ((el = el.previousElementSibling)) if (/^H[123]$/.test(el.tagName)){ t = el.textContent; break; }
+  return t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+          .replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,60) || 'diagrama-'+(i+1);
+}
+function save(blob, name){
+  const url = URL.createObjectURL(blob);
+  const a = Object.assign(document.createElement('a'), { href:url, download:name });
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+}
+function svgOf(i){
+  const svg = document.querySelector(`#d${i} svg`);
+  if (!svg) return null;
+  const c = svg.cloneNode(true);
+  const vb = (svg.getAttribute('viewBox')||'').split(/[ ,]+/).map(Number);
+  const box = svg.getBoundingClientRect();
+  const w = Math.ceil(vb.length === 4 && vb[2] ? vb[2] : box.width);
+  const h = Math.ceil(vb.length === 4 && vb[3] ? vb[3] : box.height);
+  c.setAttribute('width', w); c.setAttribute('height', h);
+  c.style.maxWidth = 'none';
+  c.setAttribute('xmlns','http://www.w3.org/2000/svg');
+  const bgRect = `<rect width="100%" height="100%" fill="${isDark()?'#1e2124':'#ffffff'}"/>`;
+  c.innerHTML = bgRect + c.innerHTML;
+  return { text:'<?xml version="1.0" encoding="UTF-8"?>\n'+new XMLSerializer().serializeToString(c),
+           w, h };
+}
+function dlSvg(i){
+  const s = svgOf(i); if (!s) return;
+  save(new Blob([s.text],{type:'image/svg+xml;charset=utf-8'}), slug(i)+'.svg');
+}
+function dlPng(i, scale){
+  const s = svgOf(i); if (!s) return Promise.resolve();
+  scale = scale || Math.min(4, Math.max(2, 1600 / (s.w || 800)));
+  return new Promise(res=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const cv = document.createElement('canvas');
+      cv.width = s.w*scale; cv.height = s.h*scale;
+      const ctx = cv.getContext('2d');
+      ctx.fillStyle = isDark()?'#1e2124':'#ffffff';
+      ctx.fillRect(0,0,cv.width,cv.height);
+      ctx.drawImage(img,0,0,cv.width,cv.height);
+      cv.toBlob(b=>{ save(b, slug(i)+'.png'); res(); }, 'image/png');
+    };
+    img.onerror = res;
+    img.src = 'data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(s.text)));
+  });
+}
+document.addEventListener('click', e=>{
+  const b = e.target.closest('.tools button'); if (!b) return;
+  const i = +b.closest('.diagram').dataset.i;
+  const act = b.dataset.act;
+  if (act === 'svg') dlSvg(i);
+  if (act === 'png') dlPng(i);
+  if (act === 'code'){
+    const host = document.getElementById('d'+i);
+    if (host.dataset.showing === 'code'){ host.dataset.showing=''; draw(); }
+    else { host.dataset.showing='code';
+      host.innerHTML = '<pre style="text-align:left;margin:0"><code>'+
+        blocks[i].replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))+'</code></pre>'; }
+  }
+});
+document.getElementById('allsvg').onclick = ()=> blocks.forEach((_,i)=> setTimeout(()=>dlSvg(i), i*250));
+document.getElementById('allpng').onclick = async ()=>{ for (let i=0;i<blocks.length;i++){ await dlPng(i); await new Promise(r=>setTimeout(r,250)); } };
+document.getElementById('pdf').onclick = ()=> window.print();
+document.getElementById('theme').onclick = ()=>{
+  document.documentElement.setAttribute('data-theme', isDark()?'light':'dark');
+  try{ localStorage.setItem('pb-theme', isDark()?'dark':'light'); }catch(e){}
+  draw();
+};
+</script>
+</body>
+</html>

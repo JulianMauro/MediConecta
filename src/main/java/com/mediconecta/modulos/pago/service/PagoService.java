@@ -66,6 +66,10 @@ public class PagoService {
 		if (pago.getEstado() == EstadoPago.RECHAZADO) {
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "el pago fue rechazado: no se puede confirmar");
 		}
+		// Si no, pagar un cobro anulado saldaria un strike que soporte ya dio de baja.
+		if (pago.getEstado() == EstadoPago.ANULADO) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "el pago fue anulado por soporte: no hay nada que pagar");
+		}
 
 		/*
 		 * Si ya estaba pagado, se devuelve el estado actual sin volver a aplicar los

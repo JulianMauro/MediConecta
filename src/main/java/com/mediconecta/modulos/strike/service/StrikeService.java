@@ -29,7 +29,8 @@ import com.mediconecta.modulos.viaje.entity.Viaje;
 @Service
 public class StrikeService {
 
-	private static final int STRIKES_PARA_BLOQUEAR = 3;
+	/** Tambien lo usa soporte: al bajar de este numero (anulando strikes) se levanta el bloqueo. */
+	public static final int STRIKES_PARA_BLOQUEAR = 3;
 
 	private final StrikeRepository strikeRepository;
 	private final PagoService pagoService;
@@ -48,10 +49,7 @@ public class StrikeService {
 	public Strike generarPorExceso(Usuario usuario, Viaje viaje) {
 		Strike strike = strikeRepository.save(new Strike(usuario, viaje));
 
-		long minutosExcedidos = viaje.duracionMinutos() - viaje.getMembresia().getTiempoPermitidoMinutos();
-		BigDecimal monto = viaje.getMembresia().getTarifaMinutoExtra().multiply(BigDecimal.valueOf(minutosExcedidos));
-
-		Pago pago = pagoService.crear(usuario, viaje, null, ConceptoPago.TIEMPO_EXTRA, monto);
+		Pago pago = pagoService.crear(usuario, viaje, null, ConceptoPago.TIEMPO_EXTRA, montoPorExceso(viaje));
 		strike.asociarPago(pago);
 
 		notificacionService.crear(usuario, viaje, TipoNotificacion.TIEMPO_EXTRA,
@@ -59,6 +57,12 @@ public class StrikeService {
 
 		evaluarBloqueo(usuario);
 		return strike;
+	}
+
+	/** Minutos por encima de los que incluye el plan, a la tarifa extra del plan. 0 si no se paso. */
+	public static BigDecimal montoPorExceso(Viaje viaje) {
+		long minutosExcedidos = Math.max(0, viaje.duracionMinutos() - viaje.getMembresia().getTiempoPermitidoMinutos());
+		return viaje.getMembresia().getTarifaMinutoExtra().multiply(BigDecimal.valueOf(minutosExcedidos));
 	}
 
 	private void evaluarBloqueo(Usuario usuario) {

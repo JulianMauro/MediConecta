@@ -70,6 +70,14 @@ public class Strike {
 		this.estado = EstadoStrike.SALDADO;
 	}
 
+	/** Solo un strike ACTIVO se anula: uno SALDADO ya se pago y no hay reintegros. */
+	public void anular() {
+		if (this.estado != EstadoStrike.ACTIVO) {
+			throw new IllegalStateException("solo se anula un strike ACTIVO, este esta " + estado);
+		}
+		this.estado = EstadoStrike.ANULADO;
+	}
+
 	public Long getId() {
 		return id;
 	}

@@ -4,6 +4,7 @@ import { ticketsApi } from '../api/tickets';
 import { chatApi } from '../api/chat';
 import { viajesApi } from '../api/viajes';
 import { ApiError } from '../api/client';
+import { GestionUsuarioModal } from '../components/soporte/GestionUsuarioModal';
 import type { CategoriaTicket, ChatMensajeResponse, EstadoTicket, TicketResponse, ViajeResponse } from '../types/dto';
 
 // Lo nuevo del chat se trae de la queue chat.p2p cada pocos segundos; la lista de tickets, mas espaciado.
@@ -126,10 +127,13 @@ function ChatPanel({
 	const [texto, setTexto] = useState('');
 	const [error, setError] = useState<string | null>(null);
 	const [enviando, setEnviando] = useState(false);
+	const [gestionando, setGestionando] = useState(false);
 	const mensajesRef = useRef<HTMLDivElement>(null);
 	const panelRef = useRef<HTMLElement>(null);
 	const inputId = useId();
 	const abierto = ticket.estado === 'EN_CHAT';
+	// Solo el admin recibe onResolver: es el mismo criterio para poder gestionar al usuario.
+	const esAdmin = Boolean(onResolver);
 
 	/*
 	 * En el celular la lista y el chat van en una sola columna: al tocar un ticket
@@ -201,8 +205,26 @@ function ChatPanel({
 						{ETIQUETA_CATEGORIA[ticket.categoria]} · {ticket.motivo}
 					</p>
 				</div>
-				<EstadoPill estado={ticket.estado} />
+				<div className="chat-cabecera-acciones">
+					<EstadoPill estado={ticket.estado} />
+					{esAdmin && abierto && (
+						<button type="button" className="boton-chico" onClick={() => setGestionando(true)}>
+							Gestionar usuario
+						</button>
+					)}
+				</div>
 			</header>
+
+			{gestionando && (
+				<GestionUsuarioModal
+					ticketId={ticket.id}
+					onCerrar={() => setGestionando(false)}
+					// Cada accion deja un mensaje en el chat a nombre del admin: se trae del historial.
+					onAccion={() => {
+						chatApi.historial(ticket.id).then(agregar).catch((e) => setError(mensajeDeError(e)));
+					}}
+				/>
+			)}
 
 			<div ref={mensajesRef} className="chat-mensajes" role="log" aria-live="polite">
 				{mensajes.length === 0 && (

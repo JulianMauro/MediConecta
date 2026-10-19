@@ -28,7 +28,9 @@ import com.mediconecta.modulos.tickets.repository.TicketRepository;
 import com.mediconecta.modulos.usuario.entity.Rol;
 import com.mediconecta.modulos.usuario.entity.Usuario;
 import com.mediconecta.modulos.usuario.repository.UsuarioRepository;
+import com.mediconecta.modulos.viaje.entity.Viaje;
 import com.mediconecta.modulos.viaje.repository.ViajeRepository;
+import com.mediconecta.testutil.Datos;
 
 /**
  * Unit test puro (sin Spring, sin base, sin broker): TicketService solo depende de
@@ -87,6 +89,32 @@ class TicketServiceTest {
 				.hasMessageContaining("viaje no encontrado");
 
 		verify(ticketProducer, never()).publicarNuevo(any());
+	}
+
+	@Test
+	void crearConElViajeDeOtroUsuarioDevuelve403YNoPublicaNada() {
+		Viaje viajeAjeno = Datos.viajeEnCurso(555L, Datos.cliente(77L), 5);
+		when(usuarioRepository.findById(10L)).thenReturn(Optional.of(cliente));
+		when(viajeRepository.findById(555L)).thenReturn(Optional.of(viajeAjeno));
+
+		assertThatThrownBy(() -> ticketService.crear(10L, new TicketRequest(555L, CategoriaTicket.ANCLAJE, "motivo")))
+				.isInstanceOf(ResponseStatusException.class)
+				.hasMessageContaining("otro usuario");
+
+		verify(ticketRepository, never()).save(any());
+		verify(ticketProducer, never()).publicarNuevo(any());
+	}
+
+	@Test
+	void crearConUnViajePropioLoAsocia() {
+		Viaje propio = Datos.viajeEnCurso(555L, cliente, 5);
+		when(usuarioRepository.findById(10L)).thenReturn(Optional.of(cliente));
+		when(viajeRepository.findById(555L)).thenReturn(Optional.of(propio));
+		when(ticketRepository.save(any(Ticket.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		TicketResponse response = ticketService.crear(10L, new TicketRequest(555L, CategoriaTicket.ANCLAJE, "no traba"));
+
+		assertThat(response.viajeId()).isEqualTo(555L);
 	}
 
 	@Test

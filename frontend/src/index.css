@@ -2846,6 +2846,124 @@ label {
 	border-top: 1px solid var(--borde);
 }
 
+/* Variante para contenido largo (gestionar un usuario desde un ticket). */
+.modal-caja-ancha {
+	max-width: 720px;
+}
+
+/* ==========================================================================
+   Soporte: gestionar al usuario de un ticket
+   ========================================================================== */
+
+.chat-cabecera-acciones {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: var(--e-2);
+	flex-shrink: 0;
+}
+
+.soporte {
+	display: flex;
+	flex-direction: column;
+	gap: var(--e-4);
+}
+
+.soporte-seccion + .soporte-seccion {
+	border-top: 1px solid var(--borde);
+	padding-top: var(--e-4);
+}
+
+.soporte-seccion h3 {
+	margin: 0 0 var(--e-2);
+}
+
+.soporte-dato {
+	margin: 0 0 var(--e-2);
+	overflow-wrap: anywhere;
+}
+
+.soporte-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--e-2);
+}
+
+.soporte-lista {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--e-3);
+}
+
+.soporte-accion {
+	border: 1px solid var(--borde);
+	border-radius: var(--forma-control, 8px);
+	padding: var(--e-2) var(--e-3);
+	background: var(--superficie-2);
+}
+
+.soporte-accion summary {
+	cursor: pointer;
+	font-weight: 600;
+	min-height: var(--target-min);
+	display: flex;
+	align-items: center;
+}
+
+.soporte-accion form {
+	display: flex;
+	flex-direction: column;
+	gap: var(--e-3);
+	padding: var(--e-2) 0 var(--e-2);
+}
+
+.soporte-accion form > button {
+	align-self: flex-start;
+}
+
+.soporte-fila-campos {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: var(--e-3);
+}
+
+.soporte-opciones {
+	border: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--e-2);
+}
+
+.soporte-opciones legend {
+	font-weight: 600;
+	margin-bottom: var(--e-1);
+}
+
+.soporte-opciones label,
+.soporte-check {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	align-items: center;
+	gap: var(--e-2);
+	text-align: left;
+	min-height: var(--target-min);
+}
+
+/* El estilo general de input les da ancho completo: a radios y checkboxes no. */
+.soporte-opciones input[type='radio'],
+.soporte-check input[type='checkbox'] {
+	width: auto;
+	min-height: 0;
+	margin: 0;
+	flex-shrink: 0;
+}
+
 /* ==========================================================================
    Generador y escáner de QR
    ========================================================================== */

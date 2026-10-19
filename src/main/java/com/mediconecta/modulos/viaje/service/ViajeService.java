@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.mediconecta.modulos.almacen.entity.Almacen;
 import com.mediconecta.modulos.estacion.entity.Anclaje;
 import com.mediconecta.modulos.estacion.entity.EstadoDock;
 import com.mediconecta.modulos.estacion.repository.AnclajeRepository;
@@ -101,27 +102,66 @@ public class ViajeService {
 
 	@Transactional
 	public ViajeResponse finalizar(Long usuarioId, ViajeFinalizarRequest request) {
-		Viaje viaje = viajeRepository.findByUsuarioIdAndFechaFinIsNull(usuarioId)
+		Viaje viaje = viajeRepository.findEnCursoParaCerrar(usuarioId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT, "no tenes un viaje en curso"));
+		cerrarEnAnclaje(viaje, request.anclajeDestinoId(), Instant.now(), false);
+		return ViajeResponse.desde(viaje);
+	}
 
-		Anclaje anclajeDestino = anclajeRepository.findById(request.anclajeDestinoId())
+	/** Para soporte: el viaje en curso del usuario, con la fila bloqueada hasta el fin de la transaccion. */
+	@Transactional
+	public Viaje enCursoParaCerrar(Long usuarioId) {
+		return viajeRepository.findEnCursoParaCerrar(usuarioId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT, "el usuario no tiene un viaje en curso"));
+	}
+
+	/** Cierre con la bici en un anclaje libre. Lo usan el cliente (fin = ahora) y soporte. */
+	@Transactional
+	public void cerrarEnAnclaje(Viaje viaje, Long anclajeDestinoId, Instant fin, boolean condonarExceso) {
+		Anclaje anclajeDestino = anclajeRepository.findParaOcupar(anclajeDestinoId)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "anclaje de destino no encontrado"));
 		if (anclajeDestino.getEstado() != EstadoDock.LIBRE) {
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "el anclaje de destino no esta libre");
 		}
 
-		viaje.finalizar(anclajeDestino);
-		Bicicleta bicicleta = viaje.getBicicleta();
-		bicicleta.anclarEn(anclajeDestino);
+		cerrar(viaje, anclajeDestino, fin, condonarExceso);
+		viaje.getBicicleta().anclarEn(anclajeDestino);
 		anclajeDestino.ocupar();
+	}
+
+	/**
+	 * Cierre sin anclaje: la bici se rompio o se perdio en el camino. Solo lo usa soporte.
+	 * Va a un almacen para respetar que una bici fuera de viaje siempre esta en un anclaje o
+	 * en un almacen (ALCANCE, regla 6): logistica la retira de la calle.
+	 */
+	@Transactional
+	public void cerrarEnAlmacen(Viaje viaje, Almacen almacen, EstadoBicicleta estadoBici, Instant fin,
+			boolean condonarExceso) {
+		if (estadoBici != EstadoBicicleta.EN_REPARACION && estadoBici != EstadoBicicleta.DESACTIVADA) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"una bici que no vuelve a un anclaje solo puede quedar EN_REPARACION o DESACTIVADA");
+		}
+
+		cerrar(viaje, null, fin, condonarExceso);
+		viaje.getBicicleta().moverAAlmacen(almacen, estadoBici);
+	}
+
+	/** Lo comun a todo cierre: el viaje, el contador en vivo y el strike si se paso del tiempo. */
+	private void cerrar(Viaje viaje, Anclaje anclajeDestino, Instant fin, boolean condonarExceso) {
+		if (fin.isAfter(Instant.now())) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "la hora de fin no puede ser futura");
+		}
+		if (fin.isBefore(viaje.getFechaInicio())) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "la hora de fin no puede ser anterior al inicio del viaje");
+		}
+
+		viaje.cerrar(anclajeDestino, fin, condonarExceso);
 		usuariosActivosService.decrementar();
 
 		// El plan ya se pago al contratarlo: lo unico que se cobra aparte es el tiempo excedido.
-		if (viaje.isExcedioTiempo()) {
+		if (viaje.isExcedioTiempo() && !viaje.isExcesoCondonado()) {
 			strikeService.generarPorExceso(viaje.getUsuario(), viaje);
 		}
-
-		return ViajeResponse.desde(viaje);
 	}
 
 	@Transactional(readOnly = true)
